@@ -11,7 +11,7 @@ a = Analysis(['_00_GUI.py'],
 			  ('version.txt', '.'),
               ('donation.gif', '.'),
               (sys.prefix+r'/tcl/tix8.4.3', 'tcl/tix8.4.3'),
-              ('chia_blockchain/chia', 'chia_blockchain/chia')
+              ('chia_blockchain/chia', 'chia_blockchain/chia'),
               ('chia_blockchain/chia', 'chia')],
              hiddenimports=[],
              hookspath=[],
