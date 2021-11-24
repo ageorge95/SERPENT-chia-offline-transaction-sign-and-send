@@ -92,7 +92,7 @@ class sponsor_reminder():
 
     def sponsor_link(self,
                      *args):
-        open_new('https://github.com/ageorge95/WILLOW-chia-forks-offline-wallet-balance#support')
+        open_new('https://github.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send#support')
 
     def sponsor_gif_animation(self):
         while True:
