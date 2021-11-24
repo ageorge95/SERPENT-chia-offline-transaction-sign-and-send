@@ -1,70 +1,45 @@
-from sqlite3 import connect
 from logging import getLogger
 from json import load,\
     dump
-from tabulate import tabulate
 from traceback import format_exc
 from sys import path
 from os import path as os_path
-from pathlib import Path
 path.append(os_path.join('chia_blockchain'))
 
 from pprint import pformat
-from chia_blockchain.chia.util.keychain import mnemonic_to_seed
-from chia_blockchain.chia.util.bech32m import encode_puzzle_hash,\
-    decode_puzzle_hash
-from chia_blockchain.chia.consensus.coinbase import create_puzzlehash_for_pk
-from chia_blockchain.chia.util.ints import uint32, uint64, uint16
-from chia_blockchain.chia.util.config import load_config
-from blspy import G1Element, AugSchemeMPL, PrivateKey, G2Element
-from typing import Dict, List, Tuple, Optional
-from chia_blockchain.chia.wallet.derive_keys import master_sk_to_wallet_sk
-from chia_blockchain.chia.rpc.full_node_rpc_client import FullNodeRpcClient
-from chia_blockchain.chia.types.blockchain_format.sized_bytes import bytes32
-import asyncio
-import json
-import time
-import requests
+from time import time
+from requests import post
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict,\
+    List,\
+    Tuple,\
+    Optional
+from blspy import G1Element,\
+    AugSchemeMPL,\
+    PrivateKey,\
+    G2Element
 
-from blspy import G1Element, AugSchemeMPL, G2Element
 from chia_blockchain.chia.consensus.cost_calculator import calculate_cost_of_program
+from chia_blockchain.chia.consensus.default_constants import DEFAULT_CONSTANTS
 from chia_blockchain.chia.full_node.bundle_tools import simple_solution_generator
 from chia_blockchain.chia.full_node.mempool_check_conditions import get_name_puzzle_conditions
-
 from chia_blockchain.chia.rpc.full_node_rpc_client import FullNodeRpcClient
 from chia_blockchain.chia.types.announcement import Announcement
 from chia_blockchain.chia.types.blockchain_format.coin import Coin
 from chia_blockchain.chia.types.blockchain_format.program import Program, SerializedProgram
-from chia_blockchain.chia.types.blockchain_format.sized_bytes import bytes32
 from chia_blockchain.chia.types.coin_record import CoinRecord
 from chia_blockchain.chia.types.coin_solution import CoinSolution
 from chia_blockchain.chia.types.condition_opcodes import ConditionOpcode
+from chia_blockchain.chia.types.blockchain_format.sized_bytes import bytes32
 from chia_blockchain.chia.types.spend_bundle import SpendBundle
 from chia_blockchain.chia.util.bech32m import encode_puzzle_hash, decode_puzzle_hash
 from chia_blockchain.chia.util.condition_tools import parse_sexp_to_conditions
 from chia_blockchain.chia.util.config import load_config
 from chia_blockchain.chia.util.ints import uint16, uint64
 from chia_blockchain.chia.util.hash import std_hash
-from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import puzzle_for_pk
-from chia_blockchain.chia.wallet.wallet import Wallet
-from chia_blockchain.chia.consensus.default_constants import DEFAULT_CONSTANTS
-from clvm.casts import int_from_bytes
-from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import (
-    puzzle_for_pk,
-    calculate_synthetic_secret_key,
-    DEFAULT_HIDDEN_PUZZLE_HASH,
-)
-import json
-from typing import Dict, List
-
-from blspy import G1Element, AugSchemeMPL, PrivateKey, G2Element
-
-from chia_blockchain.chia.types.blockchain_format.sized_bytes import bytes32
-from chia_blockchain.chia.types.spend_bundle import SpendBundle
 from chia_blockchain.chia.util.condition_tools import conditions_dict_for_solution, pkm_pairs_for_conditions_dict
 from chia_blockchain.chia.util.keychain import mnemonic_to_seed
+from chia_blockchain.chia.wallet.wallet import Wallet
 from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import (
     puzzle_for_pk,
     calculate_synthetic_secret_key,
@@ -73,164 +48,216 @@ from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle im
 
 initial_config = {'AEC': {'root': '{userdir}\\.aedge\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'aedge'},
+                         'friendly_name': 'aedge',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '18825eb33dda33a5ee862a5add9d83c55471312d10866ebe08550a6f401c21dd'},
                  'APPLE': {'root': '{userdir}\\.apple\\mainnet'.format(userdir=os_path.expanduser("~")),
                            'denominator': 1000000000000,
-                           'friendly_name': 'apple'},
+                           'friendly_name': 'apple',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '7e35d673f1ee96ca5993034cd5a7b1cd7cba51826a99287e9f51e6962c3b7a68'},
                  'AVO': {'root': '{userdir}\\.avocado\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'avocado'},
+                         'friendly_name': 'avocado',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '973ddbed6ba5f961c6fac579046afdc54cada260f14652a2f3fd643f60086e1d'},
                  'CAC': {'root': '{userdir}\\.cactus\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'cactus'},
+                         'friendly_name': 'cactus',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '55830f14be472f67c4fc19825ac22ae785204c539bb43169d5ff47a9c7b2ae2a'},
                  'CANS': {'root': '{userdir}\\.cannabis\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'cannabis'},
+                          'friendly_name': 'cannabis',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '5f96ac6cf90d112d755ee36ddef2a047917a4ecbe098c600e383cddfc34ed01a'},
                  'CGN': {'root': '{userdir}\\.chaingreen\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'chaingreen'},
+                         'friendly_name': 'chaingreen',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '0235e47be80dbba72e8e105f87776fe16690838dde7f71e8a77086c0374bcaf3'},
                  'COV': {'root': '{userdir}\\.covid\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'covid'},
+                         'friendly_name': 'covid',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '11d8513356cee3cd17832ecfcb3ad6a3cea24971f6b6f9699e0dfa1e090a8cf0'},
                  'GDOG': {'root': '{userdir}\\.greendoge\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'greendoge'},
+                          'friendly_name': 'greendoge',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'eb92c7d03986dc221ba5032cf9664f896666012b8b78bc8909089b30938862dd'},
                  'HDD': {'root': '{userdir}\\.hddcoin\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
                          'friendly_name': 'hddcoin',
                          'AGG_SIG_ME_ADDITIONAL_DATA': '49f4afb189342858dba5c1bb6b50b0deaa706088474f0c5431d65b857d54ddb5'},
                  'LCH': {'root': '{userdir}\\.lotus\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'lotus'},
+                         'friendly_name': 'lotus',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'MELON': {'root': '{userdir}\\.melon\\mainnet'.format(userdir=os_path.expanduser("~")),
                            'denominator': 1000000000,
-                           'friendly_name': 'melon'},
+                           'friendly_name': 'melon',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'c093d9d15164df3859abb049136f84456ece91d373dd3ca4e1cd1595632763f1'},
                  'MGA': {'root': '{userdir}\\.mogua\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'mogua'},
+                         'friendly_name': 'mogua',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'c9c3ba2d62e4358c204fc513092f0c020117f0a360c11b11496df75fed2adf4c'},
                  'NCH': {'root': '{userdir}\\.chia\\ext9\\db\\blockchain_v1_ext9.sqlite'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'n-chain_ext9'},
+                         'friendly_name': 'n-chain_ext9',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'OZT': {'root': '{userdir}\\.goldcoin\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'Goldcoin'},
+                         'friendly_name': 'Goldcoin',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '02f7d5a0399c86fa61fd560fd380b7f8911ed8fdfa3511ea00110346376189c3'},
                  'PEA': {'root': '{userdir}\\.peas\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'peas'},
+                         'friendly_name': 'peas',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'd7e422a7ffafe4a0d5ea22e0922ab0493df0ff782bd8d4c01808649248b4cde1'},
                  'PIPS': {'root': '{userdir}\\.pipscoin\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'Pipscoin'},
+                          'friendly_name': 'Pipscoin',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ee8b944de335e63d5e4f301e5dec0c8e0d6f227007deb4ba47be7e0ae353437a'},
                  'ROLLS': {'root': '{userdir}\\.rolls\\mainnet'.format(userdir=os_path.expanduser("~")),
                            'denominator': 1000000000000,
-                           'friendly_name': 'rolls'},
+                           'friendly_name': 'rolls',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '37989cc5d5b2f0979399ffe0d0b8192cb5969ce9bb74fa5a0c6140d33c36f17a'},
                  'SCM': {'root': '{userdir}\\.scam\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'Scamcoin'},
+                         'friendly_name': 'Scamcoin',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '11d8513356cee3cd17832ecfcb3ad6a3cea24971f6b6f9699e0dfa1e090a8cf0'},
                  'SIT': {'root': '{userdir}\\.sit\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'silicoin'},
+                         'friendly_name': 'silicoin',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ecbf4458b47e39c60afec66e245fccb042871417ffc5200cb0140346c2e044d0'},
                  'SIX': {'root': '{userdir}\\.lucky\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'lucky'},
+                         'friendly_name': 'lucky',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'SOCK': {'root': '{userdir}\\.socks\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'socks'},
+                          'friendly_name': 'socks',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'SPARE': {'root': '{userdir}\\.spare-blockchain\\mainnet'.format(userdir=os_path.expanduser("~")),
                            'denominator': 1000000000000,
-                           'friendly_name': 'spare'},
+                           'friendly_name': 'spare',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '0e7dbcaa707b4a75ef62edad42116c2d09e5d66fdcb3a09c2d0262bc50b8fee1'},
                  'STAI': {'root': '{userdir}\\.staicoin\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000,
-                          'friendly_name': 'staicoin'},
+                          'friendly_name': 'staicoin',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'e6cee7cac7e6f0c93297804882fc64c326bb68da99d8b2d2690ace371c590b72'},
                  'STOR': {'root': '{userdir}\\.stor\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'stor'},
+                          'friendly_name': 'stor',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '9bc2787915702f8c60cd7456dfb2b62237e92153cbcef895f95bba70116ac950'},
                  'TAD': {'root': '{userdir}\\.tad\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'tad'},
+                         'friendly_name': 'tad',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'TRZ': {'root': '{userdir}\\.tranzact\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'tranzact'},
+                         'friendly_name': 'tranzact',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'WHEAT': {'root': '{userdir}\\.wheat\\mainnet'.format(userdir=os_path.expanduser("~")),
                            'denominator': 1000000000000,
-                           'friendly_name': 'wheat'},
+                           'friendly_name': 'wheat',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '2504307e5ea08f9edefb3a002990417c1b8ebec055bbe8cf673e7f56a0601511'},
                  'XBR': {'root': '{userdir}\\.beernetwork\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'Beer'},
+                         'friendly_name': 'Beer',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'e0695b9baaad913fe6fa5622cbe57f40ce125d13ad3f0c705581ae34248ef8f7'},
                  'XBT': {'root': '{userdir}\\.beet\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'Beet'},
+                         'friendly_name': 'Beet',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '9b9ffca948750d8b41ac755da213461e9d2253ec7bfce80695d78f7fe7d55112'},
                  'XBTC': {'root': '{userdir}\\.btcgreen\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'btcgreen'},
+                          'friendly_name': 'btcgreen',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'a41b40c6fbb8941cfa3bd8f1c85ebdeabfd0872c321bb5c1128581d127861585'},
                  'XCA': {'root': '{userdir}\\.xcha\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'xcha'},
+                         'friendly_name': 'xcha',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ed088cce93473427737048f1b1fdab157bd5974ac5accdc70325db541fbf784d'},
                  'XCC': {'root': '{userdir}\\.chives\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 100000000,
-                         'friendly_name': 'chives'},
+                         'friendly_name': 'chives',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '69cfa80789667c51428eaf2f2126e6be944462ee5b59b8128e90b9a650f865c1'},
                  'XCD': {'root': '{userdir}\\.cryptodoge\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000,
-                         'friendly_name': 'cryptodoge'},
+                         'friendly_name': 'cryptodoge',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'cb1a2ef31f47e5b59f97c85f07c9132a700d9f4aeaa4e02b5bdc97eda60a0fac'},
                  'XCH': {'root': '{userdir}\\.chia\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'chia'},
+                         'friendly_name': 'chia',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'XCR': {'root': '{userdir}\\.chiarose\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000,
-                         'friendly_name': 'chiarose'},
+                         'friendly_name': 'chiarose',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'XDG': {'root': '{userdir}\\.dogechia\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'dogechia'},
+                         'friendly_name': 'dogechia',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'c9c3ba2d62e4358c204fc513092f0c020117f0a360c11b11496df75fed2adf4c'},
                  'XETH': {'root': '{userdir}\\.ethgreen\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000,
-                          'friendly_name': 'ethgreen'},
+                          'friendly_name': 'ethgreen',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '03451a58121a612a047a3abfa66f47d56aba93ab555d1c18c8c3ac727b3089b2'},
                  'XFK': {'root': '{userdir}\\.fork\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'fork'},
+                         'friendly_name': 'fork',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '3800a9169891c0554775b12cbf5d79f6eb50ccb5f95630536a4cecd7a18aa34b'},
                  'XFL': {'root': '{userdir}\\.flora\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'flora'},
+                         'friendly_name': 'flora',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '3498044cdfa97df3fcb59473bc52d8c70cd8972c6e21e223db3dac6c10595200'},
                  'XFX': {'root': '{userdir}\\.flax\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'flax'},
+                         'friendly_name': 'flax',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '9b9ffca948750d8b41ac755da213461e9d2253ec7bfce80695d78f7fe7d55112'},
                  'XKA': {'root': '{userdir}\\.kale\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'kale'},
+                         'friendly_name': 'kale',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '9248f1109f8f5b99d77b39e7e50ed2491848baf30d2837857561c599ef9b74cb'},
                  'XKJ': {'root': '{userdir}\\.kujenga\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'kujenga'},
+                         'friendly_name': 'kujenga',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '707cab3aede5efd4258e81e995009c5090cbed67f58770ee0d88e5b322471aa9'},
                  'XKM': {'root': '{userdir}\\.mint\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'mint'},
+                         'friendly_name': 'mint',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'a8b1ddfcd3d695218800768c4fae609642c12c7ee514a830155a4b90aa5153fc'},
                  'XKW': {'root': '{userdir}\\.kiwi\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'Kiwi'},
+                         'friendly_name': 'Kiwi',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'b5f3ef35e1b47979d718dfe632d3bf309c6d376fadcb2028dfb42d849caed3e4'},
                  'XMX': {'root': '{userdir}\\.melati\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'melati'},
+                         'friendly_name': 'melati',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'XMZ': {'root': '{userdir}\\.maize\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'maize'},
+                         'friendly_name': 'maize',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb'},
                  'XNT': {'root': '{userdir}\\.skynet\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'skynet'},
+                         'friendly_name': 'skynet',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'f0abc049cdffb33880bb7649e8f2dbff68fb8abedb5e8fb3536cc63d545487a8'},
                  'XOL': {'root': '{userdir}\\.olive\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'olive'},
+                         'friendly_name': 'olive',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '9248f1109f8f5b99d77b39e7e50ed2491848baf30d2837857561c599ef9b74cb'},
                  'XSC': {'root': '{userdir}\\.sector\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'sector'},
+                         'friendly_name': 'sector',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '8c63fdfef6e0f9a484ecbb19836c01449dfd7694f6acff0c15b5f4654ad74b9b'},
                  'XSHIB': {'root': '{userdir}\\.shibgreen\\mainnet'.format(userdir=os_path.expanduser("~")),
                            'denominator': 1000,
-                           'friendly_name': 'shibgreen'},
+                           'friendly_name': 'shibgreen',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '44fe497ba45f383d4fcf49e508ece6fac56c8d6c0f4f1d5c229cff499df8201d'},
                  'XSLV': {'root': '{userdir}\\.salvia\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
-                          'friendly_name': 'salvia'},
+                          'friendly_name': 'salvia',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'cd712de5a54aa420613d90b4c0f7ad28de3ca1f3edef0ef3fe12d2721c067802'},
                  'XTX': {'root': '{userdir}\\.taco\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'taco'},
+                         'friendly_name': 'taco',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'c37d35863a3cb05730a9905ed93b2370fea5a05726561b0b437cc841ce4b9dc5'},
                  'XVM': {'root': '{userdir}\\.venidium\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
-                         'friendly_name': 'venidium'}}
+                         'friendly_name': 'venidium',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'e172a07f4e246178138ed5a27e58c34149134b1d560fe28b640a3a524655063d'}}
 
 class SERPENT_back_end():
 
@@ -369,7 +396,7 @@ class SERPENT_back_end():
                 puzzle_hash_to_pk: Dict[bytes32, G1Element] = {}
                 records: List[CoinRecord] = []
 
-                start = time.time()
+                start = time()
                 # Using hardened keys to create transaction
                 for pk in public_keys:
                     puzzle = puzzle_for_pk(pk)
@@ -379,7 +406,7 @@ class SERPENT_back_end():
                 records = await client.get_coin_records_by_puzzle_hashes(puzzle_hashes, False)
 
                 self._log.info(f"Total number of records: {len(records)}")
-                self._log.info(f"Time taken: {time.time() - start}")
+                self._log.info(f"Time taken: {time() - start}")
 
                 total_amount: uint64 = uint64(sum([t[1] for t in outputs]) + fee)
 
@@ -522,7 +549,7 @@ class SERPENT_back_end():
         try:
             root_path = Path(self.config[coin]['root'])
             config = load_config(root_path, "config.yaml")
-            r = requests.post(url='https://localhost:{}/push_tx'.format(uint16(config['full_node']['rpc_port'])),
+            r = post(url='https://localhost:{}/push_tx'.format(uint16(config['full_node']['rpc_port'])),
                      verify=False,
                      cert=(r'{}/config/ssl/full_node/private_full_node.crt'.format(root_path),
                            r'{}/config/ssl/full_node/private_full_node.key'.format(root_path)),

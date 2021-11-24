@@ -2,17 +2,23 @@ import tkinter as tk
 from time import sleep
 from queue import Empty
 from os import path
-import webbrowser
+from webbrowser import open_new
 import sys
-import asyncio
+from asyncio import run
 from PIL import Image
 from signal import signal,\
     SIGINT
 from threading import Thread
 from logging import getLogger
 from tkinter.scrolledtext import Text, Scrollbar, ScrolledText
-from tkinter import tix, simpledialog, Entry
-from tkinter import ttk, N, S, E, W, END, Label, NONE
+from tkinter import tix,\
+    simpledialog,\
+    Entry,\
+    ttk,\
+    N, S, E, W,\
+    END,\
+    Label,\
+    NONE
 
 from _00_base import configure_logger_and_queue
 from _00_back_end import SERPENT_back_end
@@ -86,7 +92,7 @@ class sponsor_reminder():
 
     def sponsor_link(self,
                      *args):
-        webbrowser.open_new('https://github.com/ageorge95/WILLOW-chia-forks-offline-wallet-balance#support')
+        open_new('https://github.com/ageorge95/WILLOW-chia-forks-offline-wallet-balance#support')
 
     def sponsor_gif_animation(self):
         while True:
@@ -257,11 +263,11 @@ class FormControls(buttons_label_state_change,
             def action():
                 self.disable_all_buttons()
                 self.backend_label_busy(text='Busy with transferring the funds !')
-                asyncio.run(self.initiate_transfer(coin=self.coin_to_use.get().split('__')[0],
-                                       mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
-                                       address_to_send=self.entry_send_to_address.get("1.0", END).strip(),
-                                       amount_to_send=float(self.entry_send_to_amount.get()),
-                                       fees_to_attach=float(self.entry_attached_fee.get())))
+                run(self.initiate_transfer(coin=self.coin_to_use.get().split('__')[0],
+                                           mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
+                                           address_to_send=self.entry_send_to_address.get("1.0", END).strip(),
+                                           amount_to_send=float(self.entry_send_to_amount.get()),
+                                           fees_to_attach=float(self.entry_attached_fee.get())))
                 self.enable_all_buttons()
                 self.backend_label_free()
             Thread(target=action).start()
