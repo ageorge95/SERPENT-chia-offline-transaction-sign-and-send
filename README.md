@@ -13,7 +13,7 @@ Tool that can send funds out of a wallet through the full node RPC, by using a m
     - it can sign a spend bundle tx using the mnemonic
     - it can push the signed tx to the full node via its RPC interface
     
-**The takeaway here is that the tool can send transactions from a wallet to another wallet withoput having to sync the wallet, just by using the full node.**
+**The takeaway here is that the tool can send transactions from a wallet to another wallet without having to sync the wallet, just by using the full node.**
 
 - !!! WARNING !!!
    - Because the tool needs your mnemonic to work, be REALLY CAREFUL not to accidentally share the mnemonic
