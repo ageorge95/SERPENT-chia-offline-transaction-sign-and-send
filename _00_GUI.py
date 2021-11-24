@@ -258,8 +258,29 @@ class FormControls(buttons_label_state_change,
             return False
         return True
 
+    def check_address_to_send(self):
+        if self.entry_send_to_address.get("1.0", END).strip() == '':
+            self._log.warning('Please provide an address to send to. !')
+            return False
+        return True
+
+    def check_amount_fees(self):
+        try:
+            float(self.entry_send_to_amount.get())
+        except:
+            self._log.warning('Please provide proper int/float to the amount entry !')
+            return False
+
+        try:
+            float(self.entry_attached_fee.get())
+        except:
+            self._log.warning('Please provide proper int/float to the fee entry !')
+            return False
+
+        return True
+
     def master_initiate_transfer(self):
-        if self.check_coin_selection():
+        if self.check_coin_selection() and self.check_address_to_send() and self.check_amount_fees():
             def action():
                 self.disable_all_buttons()
                 self.backend_label_busy(text='Busy with transferring the funds !')
