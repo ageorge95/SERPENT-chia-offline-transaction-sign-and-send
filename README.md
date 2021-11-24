@@ -38,7 +38,7 @@ If you want fast support (faster than with github issues that is), join our Disc
 
 GUI overview:
    
-![alt text](https://raw.githubusercontent.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send/main/ReadMe_res/GUI_overview.jpg?raw=true)
+![alt text](ReadMe_res/GUI_overview.jpg?raw=true)
 
 # Support
 Found this project useful? Send your ❤ in any form you can 🙂. Please contact me if you donated and want to be added to the contributors list !
