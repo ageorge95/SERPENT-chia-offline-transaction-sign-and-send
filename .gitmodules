@@ -1,3 +1,6 @@
 [submodule "chia_blockchain"]
 	path = chia_blockchain
 	url = https://github.com/Chia-Network/chia-blockchain
+[submodule "silicoin_blockchain"]
+	path = silicoin_blockchain
+	url = https://github.com/silicoin-network/silicoin-blockchain
