@@ -103,7 +103,7 @@ class SERPENT_back_end():
         try:
             self.hardened_child_public_keys = [bytes(AugSchemeMPL.derive_child_sk(self.intermediate_sk, i).get_g1()) for i in range(number)]
             self._log.info('{} hardened child public keys have been generated successfully !'
-                           ' Here are th first 5 addresses:\n{}'.format(number,
+                           ' Here are the first 5 addresses:\n{}'.format(number,
                                                                         '\n'.join([self.generate_address_from_child_pk(x, coin) for x in self.hardened_child_public_keys][:5])))
         except:
             self._log.error('Oh snap, an error occurred while creating the hardened child public keys !\n{}'.format(format_exc(chain=False)))
