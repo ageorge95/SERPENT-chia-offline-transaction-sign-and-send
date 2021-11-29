@@ -5,14 +5,16 @@ block_cipher = None
 
 
 a = Analysis(['_00_GUI.py'],
-             pathex=['chia_blockchain'],
+             pathex=['chia_blockchain', silicoin_blockchain],
              binaries=[],
              datas=[('icon.ico', '.'),
 			  ('version.txt', '.'),
               ('donation.gif', '.'),
               (sys.prefix+r'/tcl/tix8.4.3', 'tcl/tix8.4.3'),
               ('chia_blockchain/chia', 'chia_blockchain/chia'),
-              ('chia_blockchain/chia', 'chia')],
+              ('chia_blockchain/chia', 'chia'),
+              ('silicoin_blockchain/chia', 'silicoin_blockchain/chia'),
+              ('silicoin_blockchain/chia', 'chia')],
              hiddenimports=[],
              hookspath=[],
              hooksconfig={},
