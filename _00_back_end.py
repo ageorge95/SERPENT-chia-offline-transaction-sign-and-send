@@ -1,5 +1,6 @@
 from logging import getLogger
-from json import dump
+from json import dump,\
+    load
 from os import path as os_path
 from asyncio import run
 
@@ -16,6 +17,9 @@ class SERPENT_back_end():
             self.config = initial_config
             with open('config.json', 'w') as json_out_handle:
                 dump(self.config, json_out_handle, indent=2)
+
+        with open('config.json', 'r') as json_in_handle:
+            self.config = load(json_in_handle)
 
         if not self._log:
             self._log = getLogger()

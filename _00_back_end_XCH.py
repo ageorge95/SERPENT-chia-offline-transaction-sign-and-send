@@ -1,10 +1,12 @@
 from logging import getLogger
-from json import load,\
-    dump
+from json import load
 from traceback import format_exc
-from sys import path
+import sys
 from os import path as os_path
-path.append(os_path.join('chia_blockchain'))
+try:
+    sys.path.append(os_path.join(sys._MEIPASS, 'chia_blockchain'))
+except:
+    sys.path.append(os_path.join('chia_blockchain'))
 
 from pprint import pformat
 from time import time
