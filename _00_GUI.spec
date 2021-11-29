@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['_00_GUI.py'],
-             pathex=['chia_blockchain', silicoin_blockchain],
+             pathex=['chia_blockchain', 'silicoin_blockchain'],
              binaries=[],
              datas=[('icon.ico', '.'),
 			  ('version.txt', '.'),
