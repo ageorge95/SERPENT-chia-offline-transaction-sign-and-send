@@ -263,7 +263,7 @@ class SERPENT_back_end():
                 outputs=[
                     (address_to_send, uint64(amount_to_send * self.config[coin]['denominator'])),
                 ],
-                fee=uint64(fees_to_attach),
+                fee=uint64(fees_to_attach * self.config[coin]['denominator']),
                 public_keys=self.hardened_child_public_keys,
                 prefix=coin.lower()
             )
@@ -356,8 +356,7 @@ class SERPENT_back_end():
                           mnemonic: str,
                           address_to_send,
                           amount_to_send,
-                          fees_to_attach,
-                          loop):
+                          fees_to_attach):
         if self.check_mnemonic_integrity(mnemonic=mnemonic):
             self._log.info('Initiating transfer ...')
             try:
