@@ -289,7 +289,7 @@ class SERPENT_back_end():
             puzzle_hash_to_sk: Dict[bytes32, PrivateKey] = {}
 
             # Change this loop to scan more keys if you have more
-            for i in range(10):
+            for i in range(50):
                 child_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, i)
                 child_pk: G1Element = child_sk.get_g1()
                 puzzle = puzzle_for_pk(child_pk)
