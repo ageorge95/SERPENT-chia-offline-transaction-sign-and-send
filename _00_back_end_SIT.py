@@ -54,7 +54,7 @@ class SERPENT_back_end():
 
     def __init__(self):
 
-        with open('config.json', 'r') as json_in_handle:
+        with open('config_SERPENT.json', 'r') as json_in_handle:
             self.config = load(json_in_handle)
 
         if not self._log:
