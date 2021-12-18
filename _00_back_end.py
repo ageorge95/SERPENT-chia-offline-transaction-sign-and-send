@@ -36,7 +36,7 @@ class SERPENT_back_end():
             from _00_back_end_XCH import SERPENT_back_end
 
         do = SERPENT_back_end()
-        await do.initiate_transfer_final(**kwargs)
+        return await do.initiate_transfer_final(**kwargs)
 
 # *********** debugging code ***********
 if __name__ == '__main__':

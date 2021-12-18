@@ -347,6 +347,8 @@ class SERPENT_back_end():
                 self._log.info('The transaction should be settled on the blockchain in a couple of minutes ... You can use WILLOW to quickly check the balance.')
             else:
                 self._log.info('Something went wrong ! The transaction was not accepted ! Review the input and try again.')
+
+            return response
         except:
             self._log.error('Oh snap, an error occurred while pushing the transaction !\n{}'.format(format_exc(chain=False)))
             raise Exception
@@ -356,7 +358,8 @@ class SERPENT_back_end():
                           mnemonic: str,
                           address_to_send,
                           amount_to_send,
-                          fees_to_attach):
+                          fees_to_attach,
+                          ):
         if self.check_mnemonic_integrity(mnemonic=mnemonic):
             self._log.info('Initiating transfer ...')
             try:
@@ -367,7 +370,7 @@ class SERPENT_back_end():
                                                  fees_to_attach=fees_to_attach,
                                                  coin=coin)
                 self.sign_tx(coin=coin.split('__')[0])
-                self.push_tx_transaction(coin=coin.split('__')[0])
+                return self.push_tx_transaction(coin=coin.split('__')[0])
             except:
                 self._log.error(format_exc(chain=False))
                 self._log.info('Dang it. Could not finish the transfer :(')
