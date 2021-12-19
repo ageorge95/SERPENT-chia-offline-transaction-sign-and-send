@@ -25,3 +25,5 @@ websockets
 pillow
 requests
 nest-asyncio
+skynetpos
+skynetvdf
