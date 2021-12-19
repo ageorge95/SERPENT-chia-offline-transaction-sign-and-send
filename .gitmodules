@@ -7,3 +7,6 @@
 [submodule "ethgreen_blockchain"]
 	path = ethgreen_blockchain
 	url = https://github.com/ethgreen/ethgreen-blockchain
+[submodule "melon_blockchain"]
+	path = melon_blockchain
+	url = https://github.com/mELON-Network/melon-blockchain
