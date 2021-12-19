@@ -4,3 +4,6 @@
 [submodule "silicoin_blockchain"]
 	path = silicoin_blockchain
 	url = https://github.com/silicoin-network/silicoin-blockchain
+[submodule "ethgreen_blockchain"]
+	path = ethgreen_blockchain
+	url = https://github.com/ethgreen/ethgreen-blockchain

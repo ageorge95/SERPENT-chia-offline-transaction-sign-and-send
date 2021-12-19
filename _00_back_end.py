@@ -34,6 +34,8 @@ class SERPENT_back_end():
                           **kwargs):
         if kwargs['coin'] == 'SIT':
             from _00_back_end_SIT import SERPENT_back_end
+        elif kwargs['coin'] == 'XETH':
+            from _00_back_end_XETH import SERPENT_back_end
         else:
             from _00_back_end_XCH import SERPENT_back_end
 
