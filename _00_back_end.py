@@ -2,9 +2,8 @@ from logging import getLogger
 from json import dump,\
     load
 from os import path as os_path
-from sys import path
+import sys
 from asyncio import run
-path.insert(0, os_path.join(os_path.dirname(__file__)))
 
 from _00_base import initial_config
 
@@ -14,13 +13,16 @@ class SERPENT_back_end():
 
     def __init__(self):
 
-        if not os_path.isfile('config_SERPENT.json'):
+        config_path = 'config_SERPENT.json' if '_MEIPASS' in sys.__dict__ \
+                                            else os_path.join(os_path.dirname(__file__), 'config_SERPENT.json')
+
+        if not os_path.isfile(config_path):
 
             self.config = initial_config
-            with open('config_SERPENT.json', 'w') as json_out_handle:
+            with open(config_path, 'w') as json_out_handle:
                 dump(self.config, json_out_handle, indent=2)
 
-        with open('config_SERPENT.json', 'r') as json_in_handle:
+        with open(config_path, 'r') as json_in_handle:
             self.config = load(json_in_handle)
 
         if not self._log:
@@ -37,14 +39,3 @@ class SERPENT_back_end():
 
         do = SERPENT_back_end()
         return await do.initiate_transfer_final(**kwargs)
-
-# *********** debugging code ***********
-if __name__ == '__main__':
-    from _00_base import configure_logger
-    configure_logger()
-    do_transfer = SERPENT_back_end()
-    run(do_transfer.initiate_transfer(coin='',
-                         mnemonic='',
-                         address_to_send='',
-                         amount_to_send=0,
-                         fees_to_attach=0))

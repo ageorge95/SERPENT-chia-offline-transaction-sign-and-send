@@ -2,6 +2,7 @@ import tkinter as tk
 from time import sleep
 from queue import Empty
 from os import path
+from subprocess import Popen, PIPE, STDOUT, check_output
 from webbrowser import open_new
 import sys
 from asyncio import run
@@ -284,11 +285,31 @@ class FormControls(buttons_label_state_change,
             def action():
                 self.disable_all_buttons()
                 self.backend_label_busy(text='Busy with transferring the funds !')
-                run(self.initiate_transfer(coin=self.coin_to_use.get().split('__')[0],
-                                           mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
-                                           address_to_send=self.entry_send_to_address.get("1.0", END).strip(),
-                                           amount_to_send=float(self.entry_send_to_amount.get()),
-                                           fees_to_attach=float(self.entry_attached_fee.get())))
+                self._log.info('Backend process detached. Please wait ...')
+
+                process_out = check_output('{python_exe} _00_CLI.py '
+                                 '--coin={coin} '
+                                 '--mnemonic="{mnemonic}" '
+                                 '--sendToAddr={sendToAddr} '
+                                 '--amount={amount} '
+                                 '--fees={fees} '
+                                 '--no-logger'.format(python_exe=sys.executable,
+                                                    coin=self.coin_to_use.get().split('__')[0],
+                                                    mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
+                                                    sendToAddr=self.entry_send_to_address.get("1.0", END).strip(),
+                                                    amount=float(self.entry_send_to_amount.get()),
+                                                    fees=float(self.entry_attached_fee.get())))
+
+                messages_as_list = eval(process_out.decode('utf-8').split('$$')[1])
+                for message in messages_as_list:
+                    # getattr seems to fail here ...
+                    if message[0] == 'info':
+                        self._log.info(message[1])
+                    elif message[0] == 'error':
+                        self._log.error(message[1])
+                    else:
+                        self._log.info(message[1])
+
                 self.enable_all_buttons()
                 self.backend_label_free()
             Thread(target=action).start()

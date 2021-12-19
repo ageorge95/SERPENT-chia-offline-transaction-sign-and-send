@@ -50,23 +50,25 @@ from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle im
 
 class SERPENT_back_end():
 
-    _log: getLogger = None
-
     def __init__(self):
 
-        with open('config_SERPENT.json', 'r') as json_in_handle:
+        config_path = 'config_SERPENT.json' if '_MEIPASS' in sys.__dict__ \
+                                            else os_path.join(os_path.dirname(__file__), 'config_SERPENT.json')
+
+        with open(config_path, 'r') as json_in_handle:
             self.config = load(json_in_handle)
 
-        if not self._log:
-            self._log = getLogger()
+        self.return_print_payload = []
 
     def check_mnemonic_integrity(self,
                                  mnemonic: str):
         if mnemonic == '':
-            self._log.warning('Please input a non-empty mnemonic !')
+            self.return_print_payload.append(['warning',
+                                              'Please input a non-empty mnemonic !'])
             return False
         if mnemonic.count(' ') != 23:
-            self._log.warning('Your mnemonic appears to NOT have the exact number of words !')
+            self.return_print_payload.append(['warning',
+                                              'Your mnemonic appears to NOT have the exact number of words !'])
             return False
 
         return True
@@ -81,9 +83,11 @@ class SERPENT_back_end():
             self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 8444)
             self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 2)
 
-            self._log.info('Parent public key computed: {}'.format(self.intermediate_sk.get_g1()))
+            self.return_print_payload.append(['info',
+                                              'Parent public key computed: {}'.format(self.intermediate_sk.get_g1())])
         except:
-            self._log.error('Oh snap, an error occurred while computing the parent public key !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while computing the parent public key !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     def generate_address_from_child_pk(self,
@@ -104,11 +108,13 @@ class SERPENT_back_end():
 
         try:
             self.hardened_child_public_keys = [bytes(AugSchemeMPL.derive_child_sk(self.intermediate_sk, i).get_g1()) for i in range(number)]
-            self._log.info('{} hardened child public keys have been generated successfully !'
-                           ' Here are the first 5 addresses:\n{}'.format(number,
-                                                                        '\n'.join([self.generate_address_from_child_pk(x, coin) for x in self.hardened_child_public_keys][:5])))
+            self.return_print_payload.append(['info',
+                                              '{} hardened child public keys have been generated successfully !'
+                                              ' Here are the first 5 addresses:\n{}'.format(number,
+                                                                        '\n'.join([self.generate_address_from_child_pk(x, coin) for x in self.hardened_child_public_keys][:5]))])
         except:
-            self._log.error('Oh snap, an error occurred while creating the hardened child public keys !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while creating the hardened child public keys !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     async def check_cost(self,
@@ -125,10 +131,12 @@ class SERPENT_back_end():
                                                     safe_mode=True)
             cost = calculate_cost_of_program(SerializedProgram.from_bytes(bytes(program)), npc_result,
                                              DEFAULT_CONSTANTS.COST_PER_BYTE)
-            self._log.info(f"Transaction cost: {cost}")
+            self.return_print_payload.append(['info',
+                                              f"Transaction cost: {cost}"])
             assert cost < (0.5 * DEFAULT_CONSTANTS.MAX_BLOCK_COST_CLVM)
         except:
-            self._log.error('Oh snap, an error occurred while checking the cost !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while checking the cost !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     def print_conditions(self,
@@ -142,9 +150,11 @@ class SERPENT_back_end():
                 assert error is None
                 for cvp in result_human:
                     conditions_info.append((f"\t{ConditionOpcode(cvp.opcode).name}: {[var.hex() for var in cvp.vars]}"))
-            self._log.info("Conditions:\n{}".format('\n'.join(conditions_info)))
+            self.return_print_payload.append(['info',
+                                              "Conditions:\n{}".format('\n'.join(conditions_info))])
         except:
-            self._log.error('Oh snap, an error occurred while printing conditions !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while printing conditions !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     async def create_transaction(self,
@@ -187,8 +197,10 @@ class SERPENT_back_end():
                     puzzle_hash_to_pk[puzzle_hash] = pk
                 records = await client.get_coin_records_by_puzzle_hashes(puzzle_hashes, False)
 
-                self._log.info(f"Total number of records: {len(records)}")
-                self._log.info(f"Time taken: {time() - start}")
+                self.return_print_payload.append(['info',
+                                                  f"Total number of records: {len(records)}"])
+                self.return_print_payload.append(['info',
+                                                  f"Time taken: {time() - start}"])
 
                 total_amount: uint64 = uint64(sum([t[1] for t in outputs]) + fee)
 
@@ -241,15 +253,17 @@ class SERPENT_back_end():
                 transaction_outputs = []
                 for addition in spend_bundle.additions():
                     transaction_outputs.append(f"\t{encode_puzzle_hash(addition.puzzle_hash, prefix)} {addition.amount}")
-                self._log.info("Created transaction with fees: {} and outputs:\n{}".format(spend_bundle.fees(),
-                                                                                           '\n'.join(transaction_outputs)))
+                self.return_print_payload.append(['info',
+                                                  "Created transaction with fees: {} and outputs:\n{}".format(spend_bundle.fees(),
+                                                                                           '\n'.join(transaction_outputs))])
 
                 self.spend_bundle_unsigned = spend_bundle.to_json_dict()
 
             finally:
                 client.close()
         except:
-            self._log.error('Oh snap, an error occurred while creating the transaction !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while creating the transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     async def create_unsigned_transaction(self,
@@ -268,9 +282,11 @@ class SERPENT_back_end():
                 prefix=coin.lower()
             )
 
-            self._log.info('Unsigned transaction created successfully:\n{}'.format(pformat(self.spend_bundle_unsigned, indent=2)))
+            self.return_print_payload.append(['info',
+                                              'Unsigned transaction created successfully:\n{}'.format(pformat(self.spend_bundle_unsigned, indent=2))])
         except:
-            self._log.error('Oh snap, an error occurred while creating the unsigned transaction !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while creating the unsigned transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     def sign_tx(self,
@@ -319,11 +335,13 @@ class SERPENT_back_end():
             # This transaction can be submitted to the blockchain using the RPC: push_tx
             self.signed_spend_bundle = SpendBundle(spend_bundle.coin_solutions, aggregate_signature)
 
-            self._log.info('The transaction has been successfully signed:\n{}'.format(pformat(self.signed_spend_bundle.to_json_dict(),
-                                                                                              indent=2)))
+            self.return_print_payload.append(['info',
+                                              'The transaction has been successfully signed:\n{}'.format(pformat(self.signed_spend_bundle.to_json_dict(),
+                                                                                              indent=2))])
 
         except:
-            self._log.error('Oh snap, an error occurred while signing the transaction !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['error',
+                                              'Oh snap, an error occurred while signing the transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     def push_tx_transaction(self,
@@ -339,18 +357,23 @@ class SERPENT_back_end():
                      json={"spend_bundle": self.signed_spend_bundle.to_json_dict()},
                      )
             response = r.json()
-            self._log.info('The full node responded:\n{}'.format(pformat(response,
-                                                                         indent=2)))
-            self._log.info('TX push status: {}, success status: {}'.format(response['status'],
-                                                                           response['success']))
+            self.return_print_payload.append(['info',
+                                              'The full node responded:\n{}'.format(pformat(response,
+                                                                         indent=2))])
+            self.return_print_payload.append(['info',
+                                              'TX push status: {}, success status: {}'.format(response['status'],
+                                                                           response['success'])])
             if response['success']:
-                self._log.info('The transaction should be settled on the blockchain in a couple of minutes ... You can use WILLOW to quickly check the balance.')
+                self.return_print_payload.append(['info',
+                                                  'The transaction should be settled on the blockchain in a couple of minutes ... You can use WILLOW to quickly check the balance.'])
             else:
-                self._log.info('Something went wrong ! The transaction was not accepted ! Review the input and try again.')
+                self.return_print_payload.append(['info',
+                                                  'Something went wrong ! The transaction was not accepted ! Review the input and try again.'])
 
             return response
         except:
-            self._log.error('Oh snap, an error occurred while pushing the transaction !\n{}'.format(format_exc(chain=False)))
+            self.return_print_payload.append(['info',
+                                              'Oh snap, an error occurred while pushing the transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
     async def initiate_transfer_final(self,
@@ -361,7 +384,8 @@ class SERPENT_back_end():
                           fees_to_attach,
                           ):
         if self.check_mnemonic_integrity(mnemonic=mnemonic):
-            self._log.info('Initiating transfer ...')
+            self.return_print_payload.append(['info',
+                                              'Initiating transfer ...'])
             try:
                 self.compute_parent_public_key(mnemonic=mnemonic)
                 self.create_hardened_child_public_keys(coin=coin.lower())
@@ -370,7 +394,11 @@ class SERPENT_back_end():
                                                  fees_to_attach=fees_to_attach,
                                                  coin=coin)
                 self.sign_tx(coin=coin.split('__')[0])
-                return self.push_tx_transaction(coin=coin.split('__')[0])
+                self.push_tx_transaction(coin=coin.split('__')[0])
             except:
-                self._log.error(format_exc(chain=False))
-                self._log.info('Dang it. Could not finish the transfer :(')
+                self.return_print_payload.append(['error',
+                                                  format_exc(chain=False)])
+                self.return_print_payload.append(['info',
+                                                  'Dang it. Could not finish the transfer :('])
+
+        return self.return_print_payload
