@@ -28,17 +28,35 @@ The tool was tested just in Windows, but should work on every OS where python is
 
 It was designed from the ground-up to be used as a sub-module as well, so if you want to include it in a bigger set of scripts, you can do that 🙂. Just import _00_back_end.SERPENT_back_end and you are good to go.
 
+NOTE#1: Using it as a sub-module may get you to fall into a rabbit hole. For that reason, recently a CLI interface was implemented which will completely isolate your scripts from SERPENT.
+
+NOTE#2: Long story short you have 3 ways to use SERPENT in your scripts:
+
+M#1 using the SERPENT class directly
+M#2 using _00_CLI.py to direct your queries (recommended)
+M#3 using the compiled CLI exe (more I/O overhead then M#2)
+
 If you want fast support (faster than with github issues that is), join our Discord server: https://discord.gg/yPdCmHSgMe
 
 ## WINDOWS usage - instructions
 
-1. Have the full node running and synced for the coin for which you want to do a transfer.
+1.1. Have the full node running and synced for the coin for which you want to do a transfer.
 
-2. Run the compiled exe for windows and follow the instructions on screen.
+1.2. Run the compiled exe for windows and follow the instructions on screen.
 
 GUI overview:
    
 ![alt text](ReadMe_res/GUI_overview.jpg?raw=true)
+
+OR
+
+2.1. Have the full node db of the coin you are about to check.
+
+2.2. Use the compiled CLI interface you are more of a console type of person
+
+2.2.1. Just launch the CLI in your favourite console with the -h switch to see the usage instructions; As of now those are:
+
+![alt text](ReadMe_res/CLI_overview.jpg?raw=true)
 
 # Support
 Found this project useful? Send your ❤ in any form you can 🙂. Please contact me if you donated and want to be added to the contributors list !
