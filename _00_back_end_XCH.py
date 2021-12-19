@@ -6,7 +6,7 @@ from os import path as os_path
 try:
     sys.path.append(os_path.join(sys._MEIPASS, 'chia_blockchain'))
 except:
-    sys.path.append(os_path.join('chia_blockchain'))
+    sys.path.append(os_path.join(os_path.dirname(__file__), 'chia_blockchain'))
 
 from pprint import pformat
 from time import time
