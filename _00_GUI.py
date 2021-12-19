@@ -2,7 +2,7 @@ import tkinter as tk
 from time import sleep
 from queue import Empty
 from os import path
-from subprocess import Popen, PIPE, STDOUT, check_output
+from subprocess import Popen, PIPE, STDOUT, check_output, DEVNULL, CREATE_NO_WINDOW
 from webbrowser import open_new
 import sys
 from asyncio import run
@@ -287,18 +287,22 @@ class FormControls(buttons_label_state_change,
                 self.backend_label_busy(text='Busy with transferring the funds !')
                 self._log.info('Backend process detached. Please wait ...')
 
-                process_out = check_output('{python_exe} _00_CLI.py '
+                cli_path = path.join(path.dirname(__file__), '_00_CLI.exe')  if '_MEIPASS' in sys.__dict__ \
+                                                                            else '{} _00_CLI.py'.format(sys.executable)
+
+                process_out = check_output('{cli_path} '
                                  '--coin={coin} '
                                  '--mnemonic="{mnemonic}" '
                                  '--sendToAddr={sendToAddr} '
                                  '--amount={amount} '
                                  '--fees={fees} '
-                                 '--no-logger'.format(python_exe=sys.executable,
-                                                    coin=self.coin_to_use.get().split('__')[0],
-                                                    mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
-                                                    sendToAddr=self.entry_send_to_address.get("1.0", END).strip(),
-                                                    amount=float(self.entry_send_to_amount.get()),
-                                                    fees=float(self.entry_attached_fee.get())))
+                                 '--no-logger'.format(cli_path=cli_path,
+                                                      coin=self.coin_to_use.get().split('__')[0],
+                                                      mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
+                                                      sendToAddr=self.entry_send_to_address.get("1.0", END).strip(),
+                                                      amount=float(self.entry_send_to_amount.get()),
+                                                      fees=float(self.entry_attached_fee.get())),
+                                 stderr=PIPE, stdin=PIPE, creationflags=CREATE_NO_WINDOW)
 
                 messages_as_list = eval(process_out.decode('utf-8').split('$$')[1])
                 for message in messages_as_list:
