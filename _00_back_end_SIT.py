@@ -358,7 +358,7 @@ class SERPENT_back_end():
                      )
             response = r.json()
             self.return_print_payload.append(['info',
-                                              'The full node responded:\n{}'.format(pformat(response,
+                                              'The full node responded:{},'.format(pformat(response,
                                                                          indent=2))])
             self.return_print_payload.append(['info',
                                               'TX push status: {}, success status: {}'.format(response['status'],
