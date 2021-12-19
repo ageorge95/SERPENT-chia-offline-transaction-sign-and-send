@@ -287,7 +287,7 @@ class FormControls(buttons_label_state_change,
                 self.backend_label_busy(text='Busy with transferring the funds !')
                 self._log.info('Backend process detached. Please wait ...')
 
-                cli_path = path.join(path.dirname(__file__), '_00_CLI.exe')  if '_MEIPASS' in sys.__dict__ \
+                cli_path = path.join(path.dirname(__file__), 'CLI_{}.exe'.format(open(path.join(sys._MEIPASS, 'version.txt'), 'r').read()))  if '_MEIPASS' in sys.__dict__ \
                                                                             else '{} _00_CLI.py'.format(sys.executable)
 
                 process_out = check_output('{cli_path} '
