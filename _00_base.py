@@ -185,7 +185,7 @@ initial_config = {'AEC': {'root': '{userdir}\\.aedge\\mainnet'.format(userdir=os
                            'friendly_name': 'spare',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '0e7dbcaa707b4a75ef62edad42116c2d09e5d66fdcb3a09c2d0262bc50b8fee1',
                           'module_to_use': 'chia_blockchain.chia'},
-                 'STAI': {'root': '{userdir}\\.staicoin\\mainnet'.format(userdir=os_path.expanduser("~")),
+                 'STAI': {'root': '{userdir}\\.stai\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000,
                           'friendly_name': 'staicoin',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'e6cee7cac7e6f0c93297804882fc64c326bb68da99d8b2d2690ace371c590b72',
