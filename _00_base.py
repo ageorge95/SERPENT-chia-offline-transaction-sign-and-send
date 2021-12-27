@@ -135,7 +135,7 @@ initial_config = {'AEC': {'root': '{userdir}\\.aedge\\mainnet'.format(userdir=os
                          'friendly_name': 'mogua',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'c9c3ba2d62e4358c204fc513092f0c020117f0a360c11b11496df75fed2adf4c',
                           'module_to_use': 'chia_blockchain.chia'},
-                 'NCH': {'root': '{userdir}\\.chia\\ext9\\db\\blockchain_v1_ext9.sqlite'.format(userdir=os_path.expanduser("~")),
+                 'NCH': {'root': '{userdir}\\.chia\\ext9'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
                          'friendly_name': 'n-chain_ext9',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb',
