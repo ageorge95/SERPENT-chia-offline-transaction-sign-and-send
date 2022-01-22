@@ -10,7 +10,7 @@ chiapos
 chiavdf
 click
 clvm
-clvm-rs
+clvm-rs==0.1.15
 clvm-tools
 colorama
 colorlog
