@@ -80,7 +80,7 @@ class SERPENT_back_end():
             seed: bytes = mnemonic_to_seed(mnemonic, passphrase="")
             master_private_key: PrivateKey = AugSchemeMPL.key_gen(seed)
             self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(master_private_key, 12381)
-            self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 8444)
+            self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 9699)
             self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 2)
 
             self.return_print_payload.append(['info',
