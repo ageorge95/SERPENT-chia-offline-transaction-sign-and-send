@@ -42,6 +42,8 @@ class SERPENT_back_end():
             from _00_back_end_XNT import SERPENT_back_end
         elif kwargs['coin'] == 'STAI':
             from _00_back_end_STAI import SERPENT_back_end
+        elif kwargs['coin'] == 'XCC':
+            from _00_back_end_XCC import SERPENT_back_end
         else:
             from _00_back_end_XCH import SERPENT_back_end
 

@@ -16,3 +16,6 @@
 [submodule "staicoin_blockchain"]
 	path = staicoin_blockchain
 	url = https://github.com/STATION-I/staicoin-blockchain
+[submodule "chives_blockchain"]
+	path = chives_blockchain
+	url = https://github.com/HiveProject2021/chives-blockchain
