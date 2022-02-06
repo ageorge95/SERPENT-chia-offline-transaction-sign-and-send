@@ -75,7 +75,12 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'AEC': {'root': '{userdir}\\.aedge\\mainnet'.format(userdir=os_path.expanduser("~")),
+initial_config = {'BPX': {'root': '{userdir}\\.bpx\\mainnet'.format(userdir=os_path.expanduser("~")),
+                         'denominator': 1000000000000,
+                         'friendly_name': 'bpx',
+                         'AGG_SIG_ME_ADDITIONAL_DATA': 'ac43cd6665c8c034621a22243e0c9b14d5441e6cd987f23a5201fb24537183d6',
+                         'module_to_use': 'chia_blockchain.chia'},
+                  'AEC': {'root': '{userdir}\\.aedge\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
                          'friendly_name': 'aedge',
                          'AGG_SIG_ME_ADDITIONAL_DATA': '18825eb33dda33a5ee862a5add9d83c55471312d10866ebe08550a6f401c21dd',
