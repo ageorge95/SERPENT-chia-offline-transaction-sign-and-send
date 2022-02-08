@@ -19,3 +19,6 @@
 [submodule "chives_blockchain"]
 	path = chives_blockchain
 	url = https://github.com/HiveProject2021/chives-blockchain
+[submodule "gold_blockchain"]
+	path = gold_blockchain
+	url = https://github.com/goldcoin-gl/gold-blockchain
