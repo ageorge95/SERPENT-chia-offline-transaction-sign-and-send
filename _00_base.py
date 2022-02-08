@@ -75,7 +75,12 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'BPX': {'root': '{userdir}\\.bpx\\mainnet'.format(userdir=os_path.expanduser("~")),
+initial_config = {'GL': {'root': '{userdir}\\.gold\\mainnet'.format(userdir=os_path.expanduser("~")),
+                         'denominator': 1000000000000,
+                         'friendly_name': 'gold',
+                         'AGG_SIG_ME_ADDITIONAL_DATA': 'b1e8f9ee96413b512aeb7e4a07142427e3e7c5e1c8be2242ecdc1537b523eb30',
+                         'module_to_use': 'chia_blockchain.chia'},
+                  'BPX': {'root': '{userdir}\\.bpx\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
                          'friendly_name': 'bpx',
                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ac43cd6665c8c034621a22243e0c9b14d5441e6cd987f23a5201fb24537183d6',
