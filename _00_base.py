@@ -78,7 +78,7 @@ class configure_logger_and_queue():
 initial_config = {'GL': {'root': '{userdir}\\.gold\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
                          'friendly_name': 'gold',
-                         'AGG_SIG_ME_ADDITIONAL_DATA': 'b1e8f9ee96413b512aeb7e4a07142427e3e7c5e1c8be2242ecdc1537b523eb30',
+                         'AGG_SIG_ME_ADDITIONAL_DATA': 'ecbf4458b47e39c60afec66e245fccb042871417ffc5200cb0140346c2e044d0',
                          'module_to_use': 'chia_blockchain.chia'},
                   'BPX': {'root': '{userdir}\\.bpx\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
