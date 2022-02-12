@@ -2,10 +2,10 @@ import tkinter as tk
 from time import sleep
 from queue import Empty
 from os import path
-from subprocess import Popen, PIPE, STDOUT, check_output, DEVNULL, CREATE_NO_WINDOW
+from traceback import format_exc
+from subprocess import PIPE, check_output, CREATE_NO_WINDOW
 from webbrowser import open_new
 import sys
-from asyncio import run
 from PIL import Image
 from signal import signal,\
     SIGINT
@@ -290,29 +290,32 @@ class FormControls(buttons_label_state_change,
                 cli_path = path.join(path.dirname(__file__), 'CLI_{}.exe'.format(open(path.join(sys._MEIPASS, 'version.txt'), 'r').read()))  if '_MEIPASS' in sys.__dict__ \
                                                                             else '{} _00_CLI.py'.format(sys.executable)
 
-                process_out = check_output('{cli_path} '
-                                 '--coin={coin} '
-                                 '--mnemonic="{mnemonic}" '
-                                 '--sendToAddr={sendToAddr} '
-                                 '--amount={amount} '
-                                 '--fees={fees} '
-                                 '--no-logger'.format(cli_path=cli_path,
-                                                      coin=self.coin_to_use.get().split('__')[0],
-                                                      mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
-                                                      sendToAddr=self.entry_send_to_address.get("1.0", END).strip(),
-                                                      amount=float(self.entry_send_to_amount.get()),
-                                                      fees=float(self.entry_attached_fee.get())),
-                                 stderr=PIPE, stdin=PIPE, creationflags=CREATE_NO_WINDOW)
+                try:
+                    process_out = check_output('{cli_path} '
+                                     '--coin={coin} '
+                                     '--mnemonic="{mnemonic}" '
+                                     '--sendToAddr={sendToAddr} '
+                                     '--amount={amount} '
+                                     '--fees={fees} '
+                                     '--no-logger'.format(cli_path=cli_path,
+                                                          coin=self.coin_to_use.get().split('__')[0],
+                                                          mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
+                                                          sendToAddr=self.entry_send_to_address.get("1.0", END).strip(),
+                                                          amount=float(self.entry_send_to_amount.get()),
+                                                          fees=float(self.entry_attached_fee.get())),
+                                     stderr=PIPE, stdin=PIPE, creationflags=CREATE_NO_WINDOW)
 
-                messages_as_list = eval(process_out.decode('utf-8').split('$$')[1])
-                for message in messages_as_list:
-                    # getattr seems to fail here ...
-                    if message[0] == 'info':
-                        self._log.info(message[1])
-                    elif message[0] == 'error':
-                        self._log.error(message[1])
-                    else:
-                        self._log.info(message[1])
+                    messages_as_list = eval(process_out.decode('utf-8').split('$$')[1])
+                    for message in messages_as_list:
+                        # getattr seems to fail here ...
+                        if message[0] == 'info':
+                            self._log.info(message[1])
+                        elif message[0] == 'error':
+                            self._log.error(message[1])
+                        else:
+                            self._log.info(message[1])
+                except:
+                    self._log.error(f'Could not execute the backend process ! \n{ format_exc(chain=False) }')
 
                 self.enable_all_buttons()
                 self.backend_label_free()
