@@ -18,7 +18,7 @@ jobs:
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install -r requirements.txt --extra-index-url https://pypi.skynet-network.org/v01/
+            pip install -r requirements.txt --extra-index-url https://pypi.skynet-network.org/v01/ --use-deprecated=html5lib
         - name: Build GUI & CLI
           run: |
             python _00_update_version.py "${{ github.event.release.name }}"
