@@ -3,3 +3,4 @@
 __pycache__
 runtime_log.log
 config_SERPENT.json
+/main.sym

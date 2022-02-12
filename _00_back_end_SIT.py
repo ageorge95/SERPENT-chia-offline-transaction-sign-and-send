@@ -1,8 +1,12 @@
-from logging import getLogger
+import sys
+from sys import path
+from os import path as os_path
+clvm_rs_root = os_path.join(sys._MEIPASS, 'clvm_rs_0_1_15/clvm_rs') if '_MEIPASS' in sys.__dict__\
+                                           else os_path.abspath(os_path.join(os_path.dirname(__file__), 'clvm_rs_0_1_15/clvm_rs'))
+path.insert(0, clvm_rs_root)
+
 from json import load
 from traceback import format_exc
-import sys
-from os import path as os_path
 try:
     sys.path.append(os_path.join(sys._MEIPASS, 'silicoin_blockchain'))
 except:
