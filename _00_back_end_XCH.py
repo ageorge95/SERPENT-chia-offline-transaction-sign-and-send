@@ -1,8 +1,8 @@
 import sys
 from sys import path
 from os import path as os_path
-clvm_rs_root = os_path.join(sys._MEIPASS, 'clvm_rs_0_1_2/clvm_rs') if '_MEIPASS' in sys.__dict__\
-                                           else os_path.abspath(os_path.join(os_path.dirname(__file__), 'clvm_rs_0_1_2/clvm_rs'))
+clvm_rs_root = os_path.join(sys._MEIPASS, 'clvm_rs_0_1_15/clvm_rs') if '_MEIPASS' in sys.__dict__\
+                                           else os_path.abspath(os_path.join(os_path.dirname(__file__), 'clvm_rs_0_1_15/clvm_rs'))
 path.insert(0, clvm_rs_root)
 
 from json import load
@@ -25,6 +25,7 @@ from blspy import G1Element,\
     PrivateKey,\
     G2Element
 
+from chia_blockchain.chia.consensus.cost_calculator import calculate_cost_of_program
 from chia_blockchain.chia.consensus.default_constants import DEFAULT_CONSTANTS
 from chia_blockchain.chia.full_node.bundle_tools import simple_solution_generator
 from chia_blockchain.chia.full_node.mempool_check_conditions import get_name_puzzle_conditions
@@ -131,8 +132,9 @@ class SERPENT_back_end():
             npc_result = get_name_puzzle_conditions(generator=program,
                                                     max_cost=DEFAULT_CONSTANTS.MAX_BLOCK_COST_CLVM * 0.5,
                                                     cost_per_byte=DEFAULT_CONSTANTS.COST_PER_BYTE,
-                                                    mempool_mode=True)
-            cost = npc_result.cost
+                                                    safe_mode=True)
+            cost = calculate_cost_of_program(SerializedProgram.from_bytes(bytes(program)), npc_result,
+                                             DEFAULT_CONSTANTS.COST_PER_BYTE)
             self.return_print_payload.append(['info',
                                               f"Transaction cost: {cost}"])
             assert cost < (0.5 * DEFAULT_CONSTANTS.MAX_BLOCK_COST_CLVM)
