@@ -124,7 +124,7 @@ class ConsoleUi(configure_logger_and_queue):
         self.v_scroll = Scrollbar(self.frame, orient='vertical')
         self.v_scroll.grid(row=1, column=1, sticky=(N, S))
 
-        self.scrolled_text = Text(frame, state='disabled', width=110, height=29, wrap=NONE, xscrollcommand=self.h_scroll.set, yscrollcommand=self.v_scroll.set)
+        self.scrolled_text = Text(frame, state='disabled', width=110, height=33, wrap=NONE, xscrollcommand=self.h_scroll.set, yscrollcommand=self.v_scroll.set)
         self.scrolled_text.grid(row=1, column=0, sticky=(N, S, W, E))
         self.scrolled_text.configure(font='TkFixedFont')
         self.scrolled_text.tag_config('INFO', foreground='black')
@@ -220,18 +220,26 @@ class FormControls(buttons_label_state_change,
         self.tip_send_to_address.bind_widget(self.entry_send_to_address,
                                              balloonmsg="The address where to send the funds.")
 
+        self.label_from_address = Label(self.frame, text='FORCE Send_from & Send_change_to address:')
+        self.entry_from_address = ScrolledText(self.frame, width=30, height=2)
+        self.label_from_address.grid(column=0, row=8)
+        self.entry_from_address.grid(column=0, row=9)
+        self.tip_from_address = tix.Balloon(self.frame)
+        self.tip_from_address.bind_widget(self.entry_from_address,
+                                          balloonmsg="Force only a certain address to be used (send_from and send_change_to)")
+
         self.label_send_to_amount = Label(self.frame, text='Amount to send:')
         self.entry_send_to_amount = Entry(self.frame)
-        self.label_send_to_amount.grid(column=0, row=8)
-        self.entry_send_to_amount.grid(column=0, row=9)
+        self.label_send_to_amount.grid(column=0, row=10)
+        self.entry_send_to_amount.grid(column=0, row=11)
         self.tip_send_to_amount = tix.Balloon(self.frame)
         self.tip_send_to_amount.bind_widget(self.entry_send_to_amount,
                                              balloonmsg="The amount of coins to send, ex: 1 OR 1.1 OR 10")
 
         self.label_attached_fee = Label(self.frame, text='Attached fee:')
         self.entry_attached_fee = Entry(self.frame)
-        self.label_attached_fee.grid(column=0, row=10)
-        self.entry_attached_fee.grid(column=0, row=11)
+        self.label_attached_fee.grid(column=0, row=12)
+        self.entry_attached_fee.grid(column=0, row=13)
         self.tip_attached_fee = tix.Balloon(self.frame)
         self.tip_attached_fee.bind_widget(self.entry_attached_fee,
                                           balloonmsg="The fee to attach to the transaction.")
@@ -241,17 +249,23 @@ class FormControls(buttons_label_state_change,
         self.label_backend_status = Label(self.frame, text="Doing nothing ...", fg='#33cc33')
         self.label_backend_status.grid(column=2, row=1)
 
-        self.separator_filtering_v = ttk.Separator(self.frame, orient='vertical')
-        self.separator_filtering_v.grid(column=1, row=0, rowspan=15, sticky=(N, S))
-
-        self.separator_filtering_h = ttk.Separator(self.frame, orient='horizontal')
-        self.separator_filtering_h.grid(column=0, row=12, columnspan=2, sticky=(W, E))
-
         self.button_initiate_transfer = ttk.Button(self.frame, text='Initiate transfer', command=self.master_initiate_transfer)
-        self.button_initiate_transfer.grid(column=0, row=14, sticky=W)
+        self.button_initiate_transfer.grid(column=0, row=15, sticky=W)
         self.tip_initiate_transfer = tix.Balloon(self.frame)
         self.tip_initiate_transfer.bind_widget(self.button_initiate_transfer,
-                                               balloonmsg="Will initiate the coins transfer.")
+                                               balloonmsg="Will initiate the coins transfer; will use the derived master sk.")
+
+        self.button_initiate_unstake_transfer = ttk.Button(self.frame, text='Initiate unstake transfer', command=self.master_initiate_unstake_transfer)
+        self.button_initiate_unstake_transfer.grid(column=0, row=15, sticky=E)
+        self.tip_initiate_unstake_transfer = tix.Balloon(self.frame)
+        self.tip_initiate_unstake_transfer.bind_widget(self.button_initiate_unstake_transfer,
+                                                       balloonmsg="Will initiate the coins transfer; will use the farmer sk.")
+
+        self.separator_filtering_v = ttk.Separator(self.frame, orient='vertical')
+        self.separator_filtering_v.grid(column=1, row=0, rowspan=16, sticky=(N, S))
+
+        self.separator_filtering_h = ttk.Separator(self.frame, orient='horizontal')
+        self.separator_filtering_h.grid(column=0, row=14, columnspan=2, sticky=(W, E))
 
     def check_coin_selection(self):
         if self.coin_to_use.get() == 'SELECT A COIN':
@@ -281,6 +295,47 @@ class FormControls(buttons_label_state_change,
         return True
 
     def master_initiate_transfer(self):
+        if self.check_coin_selection() and self.check_address_to_send() and self.check_amount_fees():
+            def action():
+                self.disable_all_buttons()
+                self.backend_label_busy(text='Busy with transferring the funds !')
+                self._log.info('Backend process detached. Please wait ...')
+
+                cli_path = path.join(path.dirname(__file__), 'CLI_{}.exe'.format(open(path.join(sys._MEIPASS, 'version.txt'), 'r').read()))  if '_MEIPASS' in sys.__dict__ \
+                                                                            else '{} _00_CLI.py'.format(sys.executable)
+
+                try:
+                    process_out = check_output('{cli_path} '
+                                     '--coin={coin} '
+                                     '--mnemonic="{mnemonic}" '
+                                     '--sendToAddr={sendToAddr} '
+                                     '--amount={amount} '
+                                     '--fees={fees} '
+                                     '--no-logger'.format(cli_path=cli_path,
+                                                          coin=self.coin_to_use.get().split('__')[0],
+                                                          mnemonic=self.entry_mnemonic.get("1.0", END).strip(),
+                                                          sendToAddr=self.entry_send_to_address.get("1.0", END).strip(),
+                                                          amount=float(self.entry_send_to_amount.get()),
+                                                          fees=float(self.entry_attached_fee.get())),
+                                     stderr=PIPE, stdin=PIPE, creationflags=CREATE_NO_WINDOW)
+
+                    messages_as_list = eval(process_out.decode('utf-8').split('$$')[1])
+                    for message in messages_as_list:
+                        # getattr seems to fail here ...
+                        if message[0] == 'info':
+                            self._log.info(message[1])
+                        elif message[0] == 'error':
+                            self._log.error(message[1])
+                        else:
+                            self._log.info(message[1])
+                except:
+                    self._log.error(f'Could not execute the backend process ! \n{ format_exc(chain=False) }')
+
+                self.enable_all_buttons()
+                self.backend_label_free()
+            Thread(target=action).start()
+
+    def master_initiate_unstake_transfer(self):
         if self.check_coin_selection() and self.check_address_to_send() and self.check_amount_fees():
             def action():
                 self.disable_all_buttons()
