@@ -13,11 +13,11 @@ class SERPENTcli(configure_logger_and_queue,
         super(SERPENTcli, self).__init__()
 
     def return_configured_coins(self):
-        return [entry[0] for entry in self.config.items()]
+        return [entry[0] for entry in self.config_SERPENT.items()]
 
     def check_valid_coin(self,
                          coin):
-        if coin not in [entry[0] for entry in self.config.items()]:
+        if coin not in [entry[0] for entry in self.config_SERPENT.items()]:
             return False
         return True
 
@@ -27,7 +27,7 @@ parser = ArgumentParser(description='CLI: WILLOW-chia-forks-offline-wallet-balan
 parser.add_argument('-c',
                     '--coin',
                     type=str,
-                    help='Coin to be processed, Can be one of the following: {}'.format('|'.join(coin for coin in SERPENTcli().return_configured_coins())))
+                    help='Coin (asset) to be processed, Can be one of the following: {}'.format('|'.join(coin for coin in SERPENTcli().return_configured_coins())))
 
 parser.add_argument('-m',
                     '--mnemonic',
@@ -54,7 +54,9 @@ parser.add_argument('-f',
 
 parser.add_argument('--logger', dest='logger', action='store_true')
 parser.add_argument('--no-logger', dest='logger', action='store_false')
+parser.add_argument('--farmerSK', dest='farmerSK', action='store_true')
 parser.set_defaults(logger=True)
+parser.set_defaults(farmerSK=False)
 
 if __name__ == '__main__':
 
@@ -76,11 +78,13 @@ if __name__ == '__main__':
     if not args.amount:
         sys.exit('How much shall I send ? Please provide an amount !')
 
-    message_payload = run(SERPENTobj.initiate_transfer(coin=args.coin,
-                                                         mnemonic=args.mnemonic,
-                                                         address_to_send=args.sendToAddr,
-                                                         amount_to_send=args.amount,
-                                                         fees_to_attach=args.fees))
+    message_payload = run(SERPENTobj.initiate_transfer(asset=args.coin,
+                                                       mnemonic=args.mnemonic,
+                                                       send_to_address=args.sendToAddr,
+                                                       amount_to_send=args.amount,
+                                                       fees_to_attach=args.fees,
+                                                       use_farmer_sk=args.farmerSK))
+
     if not args.logger:
         print('$${}$$'.format(str(message_payload)))
     else:
