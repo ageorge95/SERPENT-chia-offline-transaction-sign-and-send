@@ -7,17 +7,13 @@ Tool that can send funds out of a wallet through the full node RPC, by using a m
 
 # High level overview
 - The script's' functionalities:
-    - it can generate a parent public key from a mnemonic
-    - it can generate quantum resistent child public keys
+    - it can derive keys from the master_sk to send funds
+    - it can send funds from the farmer_sk (aka unstaking SIT and GL coins)  
     - it can generate a spend bundle with help from a running full node via its RPC interface
     - it can sign a spend bundle tx using the mnemonic
     - it can push the signed tx to the full node via its RPC interface
     
 **The takeaway here is that the tool can send transactions from a wallet to another wallet without having to sync the wallet, just by using the full node.**
-
-- !!! WARNING !!!
-   - Because the tool needs your mnemonic to work, be REALLY CAREFUL not to accidentally share the mnemonic
-   - The backend is posted here on github and I tried not to obfuscate anything so PLEASE feel free to review the code before you run it.
 
 # Feedback/ Contribution
 - Please post any issues you encountered or any feature requests using the issues tab.
@@ -33,7 +29,9 @@ NOTE#1: Using it as a sub-module may get you to fall into a rabbit hole. For tha
 NOTE#2: Long story short you have 3 ways to use SERPENT in your scripts:
 
 M#1 using the SERPENT class directly
+
 M#2 using _00_CLI.py to direct your queries (recommended)
+
 M#3 using the compiled CLI exe (more I/O overhead then M#2)
 
 If you want fast support (faster than with github issues that is), join our Discord server: https://discord.gg/yPdCmHSgMe
