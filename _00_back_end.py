@@ -3,8 +3,6 @@ from json import dump,\
     load
 from os import path as os_path
 import sys
-from asyncio import run
-
 from _00_base import initial_config
 
 class SERPENT_back_end():
@@ -13,17 +11,17 @@ class SERPENT_back_end():
 
     def __init__(self):
 
-        config_path = 'config_SERPENT.json' if '_MEIPASS' in sys.__dict__ \
+        config_SERPENT_path = 'config_SERPENT.json' if '_MEIPASS' in sys.__dict__ \
                                             else os_path.join(os_path.dirname(__file__), 'config_SERPENT.json')
 
-        if not os_path.isfile(config_path):
+        if not os_path.isfile(config_SERPENT_path):
 
-            self.config = initial_config
-            with open(config_path, 'w') as json_out_handle:
-                dump(self.config, json_out_handle, indent=2)
+            self.config_SERPENT = initial_config
+            with open(config_SERPENT_path, 'w') as json_out_handle:
+                dump(self.config_SERPENT, json_out_handle, indent=2)
 
-        with open(config_path, 'r') as json_in_handle:
-            self.config = load(json_in_handle)
+        with open(config_SERPENT_path, 'r') as json_in_handle:
+            self.config_SERPENT = load(json_in_handle)
 
         if not self._log:
             self._log = getLogger()
@@ -32,19 +30,19 @@ class SERPENT_back_end():
 
     async def initiate_transfer(self,
                           **kwargs):
-        if kwargs['coin'] == 'SIT':
+        if kwargs['asset'] == 'SIT':
             from _00_back_end_SIT import SERPENT_back_end
-        elif kwargs['coin'] == 'XETH':
+        elif kwargs['asset'] == 'XETH':
             from _00_back_end_XETH import SERPENT_back_end
-        elif kwargs['coin'] == 'MELON':
+        elif kwargs['asset'] == 'MELON':
             from _00_back_end_MELON import SERPENT_back_end
-        elif kwargs['coin'] == 'XNT':
+        elif kwargs['asset'] == 'XNT':
             from _00_back_end_XNT import SERPENT_back_end
-        elif kwargs['coin'] == 'STAI':
+        elif kwargs['asset'] == 'STAI':
             from _00_back_end_STAI import SERPENT_back_end
-        elif kwargs['coin'] == 'XCC':
+        elif kwargs['asset'] == 'XCC':
             from _00_back_end_XCC import SERPENT_back_end
-        elif kwargs['coin'] == 'GL':
+        elif kwargs['asset'] == 'GL':
             from _00_back_end_GL import SERPENT_back_end
         else:
             from _00_back_end_XCH import SERPENT_back_end
