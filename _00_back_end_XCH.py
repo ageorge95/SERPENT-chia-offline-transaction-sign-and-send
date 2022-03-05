@@ -1,17 +1,14 @@
 import sys
-from sys import path
-from os import path as os_path
-clvm_rs_root = os_path.join(sys._MEIPASS, 'clvm_rs_0_1_15/clvm_rs') if '_MEIPASS' in sys.__dict__\
-                                           else os_path.abspath(os_path.join(os_path.dirname(__file__), 'clvm_rs_0_1_15/clvm_rs'))
-path.insert(0, clvm_rs_root)
+from os import path
+clvm_rs_root = path.join(sys._MEIPASS, 'clvm_rs_0_1_15/clvm_rs')\
+    if '_MEIPASS' in sys.__dict__\
+    else path.abspath(path.join(path.dirname(__file__), 'clvm_rs_0_1_15/clvm_rs'))
+sys.path.insert(0, clvm_rs_root)
+try: sys.path.append(path.join(sys._MEIPASS, 'chia_blockchain'))
+except: sys.path.append(path.join(path.dirname(__file__), 'chia_blockchain'))
 
 from json import load
 from traceback import format_exc
-try:
-    sys.path.append(os_path.join(sys._MEIPASS, 'chia_blockchain'))
-except:
-    sys.path.append(os_path.join(os_path.dirname(__file__), 'chia_blockchain'))
-
 from pprint import pformat
 from time import time
 from requests import post
@@ -23,8 +20,8 @@ from typing import Dict,\
 from blspy import G1Element,\
     AugSchemeMPL,\
     PrivateKey,\
-    G2Element
-
+    G2Element,\
+    PublicKeyMPL
 from chia_blockchain.chia.consensus.cost_calculator import calculate_cost_of_program
 from chia_blockchain.chia.consensus.default_constants import DEFAULT_CONSTANTS
 from chia_blockchain.chia.full_node.bundle_tools import simple_solution_generator
@@ -45,7 +42,9 @@ from chia_blockchain.chia.util.ints import uint16, uint64
 from chia_blockchain.chia.util.hash import std_hash
 from chia_blockchain.chia.util.condition_tools import conditions_dict_for_solution, pkm_pairs_for_conditions_dict
 from chia_blockchain.chia.util.keychain import mnemonic_to_seed
+from chia_blockchain.chia.util.byte_types import hexstr_to_bytes
 from chia_blockchain.chia.wallet.wallet import Wallet
+from chia_blockchain.chia.wallet.derive_keys import master_sk_to_farmer_sk
 from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import (
     puzzle_for_pk,
     calculate_synthetic_secret_key,
@@ -57,15 +56,17 @@ class SERPENT_back_end():
     def __init__(self):
 
         config_path = 'config_SERPENT.json' if '_MEIPASS' in sys.__dict__ \
-                                            else os_path.join(os_path.dirname(__file__), 'config_SERPENT.json')
-
+                                            else path.join(path.dirname(__file__), 'config_SERPENT.json')
         with open(config_path, 'r') as json_in_handle:
-            self.config = load(json_in_handle)
+            self.config_SERPENT = load(json_in_handle)
 
-        self.return_print_payload = []
+        self.return_print_payload = [['info',
+                                      'SERPENT backend init completed.']]
 
-    def check_mnemonic_integrity(self,
-                                 mnemonic: str):
+    def check_mnemonic_integrity(
+            self,
+            mnemonic: str
+    ) -> bool:
         if mnemonic == '':
             self.return_print_payload.append(['warning',
                                               'Please input a non-empty mnemonic !'])
@@ -77,52 +78,67 @@ class SERPENT_back_end():
 
         return True
 
-    def compute_parent_public_key(self,
-                                  mnemonic: str):
+    def _compute_sks(
+            self,
+            mnemonic: str
+    ) -> None:
 
         try:
             seed: bytes = mnemonic_to_seed(mnemonic, passphrase="")
-            master_private_key: PrivateKey = AugSchemeMPL.key_gen(seed)
-            self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(master_private_key, 12381)
-            self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 8444)
-            self.intermediate_sk = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 2)
+            master_sk: PrivateKey = AugSchemeMPL.key_gen(seed)
+            self.farmer_sk: PrivateKey = master_sk_to_farmer_sk(master_sk)
+            self.farmer_pk: PublicKeyMPL = self.farmer_sk.get_g1()
+            self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(master_sk, 12381)
+            self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 8444)
+            self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 2)
 
             self.return_print_payload.append(['info',
-                                              'Parent public key computed: {}'.format(self.intermediate_sk.get_g1())])
+                                              'sks computed.'])
         except:
             self.return_print_payload.append(['error',
                                               'Oh snap, an error occurred while computing the parent public key !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    def generate_address_from_child_pk(self,
-                                       child_pk: G1Element,
-                                       prefix) -> str:
-        puzzle = puzzle_for_pk(child_pk)
+    def generate_address_from_pk(
+            self,
+            pk: G1Element,
+            prefix: str
+    ) -> str:
+
+        puzzle = puzzle_for_pk(pk)
         puzzle_hash = puzzle.get_tree_hash()
+
         return encode_puzzle_hash(puzzle_hash, prefix)
 
-    def create_hardened_child_public_keys(self,
-                                          coin,
-                                          number: int = 50
-                                          ):
+    def _create_hardened_child_pks(
+            self,
+            prefix,
+            use_farmer_sk: bool,
+            number: int = 50,
+    ) -> None:
         """
         Creates child public keys, derived from the master private key, using hardened derivation. This method is more
         secure than public key derivation since it's following the EIP-2333 spec for quantum security.
         """
 
         try:
-            self.hardened_child_public_keys = [bytes(AugSchemeMPL.derive_child_sk(self.intermediate_sk, i).get_g1()) for i in range(number)]
-            self.return_print_payload.append(['info',
-                                              '{} hardened child public keys have been generated successfully !'
-                                              ' Here are the first 5 addresses:\n{}'.format(number,
-                                                                        '\n'.join([self.generate_address_from_child_pk(x, coin) for x in self.hardened_child_public_keys][:5]))])
+            if use_farmer_sk:
+                self.hardened_child_pks = [hexstr_to_bytes(str(self.farmer_pk))]
+            else:
+                self.hardened_child_pks = [bytes(AugSchemeMPL.derive_child_sk(self.intermediate_sk, i).get_g1()) for i in range(number)]
+                self.return_print_payload.append(['info',
+                                                  '{} hardened child public keys have been generated successfully !'
+                                                  ' Here are the first 5 addresses:\n{}'.format(number,
+                                                                            '\n'.join([self.generate_address_from_pk(x, prefix) for x in self.hardened_child_pks][:5]))])
         except:
             self.return_print_payload.append(['error',
                                               'Oh snap, an error occurred while creating the hardened child public keys !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    async def check_cost(self,
-                         bundle: SpendBundle) -> None:
+    async def check_cost(
+            self,
+            bundle: SpendBundle
+    ) -> None:
         """
         Checks that the cost of the transaction does not exceed blockchain limits. As of version 1.1.2, the mempool limits
         transactions to 50% of the block limit, or 0.5 * 11000000000 = 5.5 billion cost.
@@ -143,13 +159,17 @@ class SERPENT_back_end():
                                               'Oh snap, an error occurred while checking the cost !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    def print_conditions(self,
-                         spend_bundle: SpendBundle):
+    def print_conditions(
+            self,
+            spend_bundle: SpendBundle
+    ) -> None:
+
         try:
             conditions_info = []
             for coin_solution in spend_bundle.coin_solutions:
                 result = Program.from_bytes(bytes(coin_solution.puzzle_reveal)).run(
-                    Program.from_bytes(bytes(coin_solution.solution)))
+                    Program.from_bytes(bytes(coin_solution.solution))
+                )
                 error, result_human = parse_sexp_to_conditions(result)
                 assert error is None
                 for cvp in result_human:
@@ -161,12 +181,13 @@ class SERPENT_back_end():
                                               'Oh snap, an error occurred while printing conditions !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    async def create_transaction(self,
-        coin,
-        outputs: List[Tuple[str, uint64]],
-        fee: uint64,
-        prefix="xch",
-        public_keys: Optional[List[G1Element]] = None,
+    async def create_transaction(
+            self,
+            asset: str,
+            outputs: List[Tuple[str, uint64]],
+            fee: uint64,
+            prefix: str,
+            pks: Optional[List[G1Element]] = None
     ):
         """
         This searches for all coins controlled by the master public key, by deriving child pks in batches of 1000,
@@ -174,14 +195,18 @@ class SERPENT_back_end():
         the master public key SECRET, since if someone controls the master public key, and one of the child private keys,
         they can derive any other child private key.
 
-        This method creates a spend bundle (transaction) with the given outputs and fees, in MOJO (chia trillionths).
+        This method creates a spend bundle (transaction) with the given outputs and fees, in MOJO (chia trillionths),
+        or the equivalent for chia forks.
         It is an unsigned transaction so it must be passed to a signer to sign, in JSON.
         """
 
         try:
-            root_path = Path(self.config[coin]['root'])
+            root_path = Path(self.config_SERPENT[asset]['root'])
             config = load_config(root_path, "config.yaml")
-            client: FullNodeRpcClient = await FullNodeRpcClient.create("127.0.0.1", uint16(config['full_node']['rpc_port']), root_path, config)
+            client: FullNodeRpcClient = await FullNodeRpcClient.create("127.0.0.1",
+                                                                       uint16(config['full_node']['rpc_port']),
+                                                                       root_path,
+                                                                       config)
             try:
                 state: Dict = await client.get_blockchain_state()
 
@@ -190,16 +215,14 @@ class SERPENT_back_end():
 
                 puzzle_hashes: List[bytes32] = []
                 puzzle_hash_to_pk: Dict[bytes32, G1Element] = {}
-                records: List[CoinRecord] = []
 
                 start = time()
-                # Using hardened keys to create transaction
-                for pk in public_keys:
+                for pk in pks:
                     puzzle = puzzle_for_pk(pk)
                     puzzle_hash = puzzle.get_tree_hash()
                     puzzle_hashes.append(puzzle_hash)
                     puzzle_hash_to_pk[puzzle_hash] = pk
-                records = await client.get_coin_records_by_puzzle_hashes(puzzle_hashes, False)
+                records: List[CoinRecord] = await client.get_coin_records_by_puzzle_hashes(puzzle_hashes, False)
 
                 self.return_print_payload.append(['info',
                                                   f"Total number of records: {len(records)}"])
@@ -270,20 +293,21 @@ class SERPENT_back_end():
                                               'Oh snap, an error occurred while creating the transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    async def create_unsigned_transaction(self,
-                                          address_to_send,
-                                          amount_to_send,
-                                          fees_to_attach,
-                                          coin):
+    async def create_unsigned_transaction_hardened(
+            self,
+            send_to_address: str,
+            amount_to_send: float,
+            fees_to_attach: float,
+            asset: str
+    ) -> None:
         try:
             await self.create_transaction(
-                coin=coin,
-                outputs=[
-                    (address_to_send, uint64(amount_to_send * self.config[coin]['denominator'])),
-                ],
-                fee=uint64(fees_to_attach * self.config[coin]['denominator']),
-                public_keys=self.hardened_child_public_keys,
-                prefix=coin.lower()
+                asset=asset,
+                outputs=[(send_to_address,
+                          uint64(amount_to_send * self.config_SERPENT[asset]['denominator']))],
+                fee=uint64(fees_to_attach * self.config_SERPENT[asset]['denominator']),
+                pks=self.hardened_child_pks,
+                prefix=asset.lower()
             )
 
             self.return_print_payload.append(['info',
@@ -293,8 +317,12 @@ class SERPENT_back_end():
                                               'Oh snap, an error occurred while creating the unsigned transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    def sign_tx(self,
-                coin):
+    def sign_tx(
+            self,
+            asset: str,
+            use_farmer_sk: bool,
+            number: int = 50
+    ) -> None:
         """
         Uses an unsigned transaction (called a spend bundle in chia), and a 24 word mnemonic (master sk)
         and generates the aggregate BLS signature for the transaction.
@@ -305,16 +333,19 @@ class SERPENT_back_end():
             spend_bundle: SpendBundle = SpendBundle.from_json_dict(self.spend_bundle_unsigned)
 
             # This field is the ADDITIONAL_DATA found in the constants
-            additional_data: bytes = bytes.fromhex(self.config[coin]['AGG_SIG_ME_ADDITIONAL_DATA'])
+            additional_data: bytes = bytes.fromhex(self.config_SERPENT[asset]['AGG_SIG_ME_ADDITIONAL_DATA'])
             puzzle_hash_to_sk: Dict[bytes32, PrivateKey] = {}
 
-            # Change this loop to scan more keys if you have more
-            for i in range(50):
-                child_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, i)
-                child_pk: G1Element = child_sk.get_g1()
-                puzzle = puzzle_for_pk(child_pk)
-                puzzle_hash = puzzle.get_tree_hash()
-                puzzle_hash_to_sk[puzzle_hash] = child_sk
+            if not use_farmer_sk:
+                for i in range(number):
+                    child_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, i)
+                    child_pk: G1Element = child_sk.get_g1()
+                    puzzle = puzzle_for_pk(child_pk)
+                    puzzle_hash = puzzle.get_tree_hash()
+                    puzzle_hash_to_sk[puzzle_hash] = child_sk
+            else:
+                for entry in self.hardened_child_pks:
+                    puzzle_hash_to_sk[puzzle_for_pk(entry).get_tree_hash()] = self.farmer_sk
 
             aggregate_signature: G2Element = G2Element()
             for coin_solution in spend_bundle.coin_solutions:
@@ -348,10 +379,12 @@ class SERPENT_back_end():
                                               'Oh snap, an error occurred while signing the transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    def push_tx_transaction(self,
-                            coin):
+    def push_tx_transaction(
+            self,
+            asset: str
+    ) -> None:
         try:
-            root_path = Path(self.config[coin]['root'])
+            root_path = Path(self.config_SERPENT[asset]['root'])
             config = load_config(root_path, "config.yaml")
             r = post(url='https://localhost:{}/push_tx'.format(uint16(config['full_node']['rpc_port'])),
                      verify=False,
@@ -380,25 +413,29 @@ class SERPENT_back_end():
                                               'Oh snap, an error occurred while pushing the transaction !\n{}'.format(format_exc(chain=False))])
             raise Exception
 
-    async def initiate_transfer_final(self,
-                          coin,
-                          mnemonic: str,
-                          address_to_send,
-                          amount_to_send,
-                          fees_to_attach,
-                          ):
+    async def initiate_transfer_final(
+            self,
+            asset: str,
+            mnemonic: str,
+            send_to_address: str,
+            amount_to_send: float,
+            fees_to_attach: float,
+            use_farmer_sk: bool
+    ):
         if self.check_mnemonic_integrity(mnemonic=mnemonic):
             self.return_print_payload.append(['info',
                                               'Initiating transfer ...'])
             try:
-                self.compute_parent_public_key(mnemonic=mnemonic)
-                self.create_hardened_child_public_keys(coin=coin.lower())
-                await self.create_unsigned_transaction(address_to_send=address_to_send,
-                                                 amount_to_send=amount_to_send,
-                                                 fees_to_attach=fees_to_attach,
-                                                 coin=coin)
-                self.sign_tx(coin=coin.split('__')[0])
-                self.push_tx_transaction(coin=coin.split('__')[0])
+                self._compute_sks(mnemonic=mnemonic)
+                self._create_hardened_child_pks(prefix=asset.lower(),
+                                                use_farmer_sk=use_farmer_sk)
+                await self.create_unsigned_transaction_hardened(send_to_address=send_to_address,
+                                                                amount_to_send=amount_to_send,
+                                                                fees_to_attach=fees_to_attach,
+                                                                asset=asset)
+                self.sign_tx(asset=asset.split('__')[0],
+                             use_farmer_sk=use_farmer_sk)
+                self.push_tx_transaction(asset=asset.split('__')[0])
             except:
                 self.return_print_payload.append(['error',
                                                   format_exc(chain=False)])
