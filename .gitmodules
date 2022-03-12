@@ -22,3 +22,6 @@
 [submodule "gold_blockchain"]
 	path = gold_blockchain
 	url = https://github.com/goldcoin-gl/gold-blockchain
+[submodule "joker_blockchain"]
+	path = joker_blockchain
+	url = https://github.com/joker-network/joker-blockchain

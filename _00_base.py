@@ -75,7 +75,11 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'GL': {'root': '{userdir}\\.gold\\mainnet'.format(userdir=os_path.expanduser("~")),
+initial_config = {'XJK': {'root': '{userdir}\\.joker\\mainnet'.format(userdir=os_path.expanduser("~")),
+                         'denominator': 100000000,
+                         'friendly_name': 'joker',
+                         'AGG_SIG_ME_ADDITIONAL_DATA': 'e361525c6797d147dcee1de0363ccd465ea11f92c6606f23dfb561456d746586'},
+                  'GL': {'root': '{userdir}\\.gold\\mainnet'.format(userdir=os_path.expanduser("~")),
                          'denominator': 1000000000000,
                          'friendly_name': 'gold',
                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ecbf4458b47e39c60afec66e245fccb042871417ffc5200cb0140346c2e044d0'},
