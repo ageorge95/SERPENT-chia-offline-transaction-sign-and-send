@@ -89,7 +89,7 @@ class SERPENT_back_end():
             self.farmer_sk: PrivateKey = master_sk_to_farmer_sk(master_sk)
             self.farmer_pk: PublicKeyMPL = self.farmer_sk.get_g1()
             self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(master_sk, 12381)
-            self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 8444)
+            self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 18444)
             self.intermediate_sk: PrivateKey = AugSchemeMPL.derive_child_sk(self.intermediate_sk, 2)
 
             self.return_print_payload.append(['info',
