@@ -75,7 +75,11 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'PROFIT': {'root': '{userdir}\\.profit\\mainnet'.format(userdir=os_path.expanduser("~")),
+initial_config = {'XGJ': {'root': '{userdir}\\.goji\\mainnet'.format(userdir=os_path.expanduser("~")),
+                          'denominator': 1000000000000,
+                          'friendly_name': 'goji',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '71a8f9db32f6b5b90dc1fbbdb9f8f0d41c8fc9f695b88fcb88cfa61c14d4393d'},
+                  'PROFIT': {'root': '{userdir}\\.profit\\mainnet'.format(userdir=os_path.expanduser("~")),
                              'denominator': 1000000000000,
                              'friendly_name': 'profit',
                              'AGG_SIG_ME_ADDITIONAL_DATA': '3a6e0de9e5fe10bec5b941c61b020d09c13e82edb57e8f61a53152cd399d3894'},
