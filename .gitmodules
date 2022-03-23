@@ -25,3 +25,6 @@
 [submodule "joker_blockchain"]
 	path = joker_blockchain
 	url = https://github.com/joker-network/joker-blockchain
+[submodule "profit_blockchain"]
+	path = profit_blockchain
+	url = https://github.com/ProfitCrypto/profit-blockchain
