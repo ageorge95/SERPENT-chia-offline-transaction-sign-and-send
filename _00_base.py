@@ -75,7 +75,11 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XGJ': {'root': '{userdir}\\.goji\\mainnet'.format(userdir=os_path.expanduser("~")),
+initial_config = {'ECO': {'root': '{userdir}\\.ecostake\\mainnet'.format(userdir=os_path.expanduser("~")),
+                          'denominator': 1000000000000,
+                          'friendly_name': 'ecostake',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ac5e7984cc2953b827bc8afaa48628ad9eaf52ee851d787710b1c9aedba12df2'},
+                  'XGJ': {'root': '{userdir}\\.goji\\mainnet'.format(userdir=os_path.expanduser("~")),
                           'denominator': 1000000000000,
                           'friendly_name': 'goji',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '71a8f9db32f6b5b90dc1fbbdb9f8f0d41c8fc9f695b88fcb88cfa61c14d4393d'},

@@ -48,6 +48,8 @@ class SERPENT_back_end():
             from _00_back_end_PROFIT import SERPENT_back_end
         elif kwargs['asset'] == 'XJK':
             from _00_back_end_XJK import SERPENT_back_end
+        elif kwargs['asset'] == 'ECO':
+            from _00_back_end_ECO import SERPENT_back_end
         else:
             from _00_back_end_XCH import SERPENT_back_end
 

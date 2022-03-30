@@ -28,3 +28,6 @@
 [submodule "profit_blockchain"]
 	path = profit_blockchain
 	url = https://github.com/ProfitCrypto/profit-blockchain
+[submodule "ecostake_blockchain"]
+	path = ecostake_blockchain
+	url = https://github.com/Ecostake-Network/ecostake-blockchain
