@@ -1,33 +1,4 @@
 [submodule "chia_blockchain"]
 	path = chia_blockchain
-	url = https://github.com/Chia-Network/chia-blockchain
-[submodule "silicoin_blockchain"]
-	path = silicoin_blockchain
-	url = https://github.com/silicoin-network/silicoin-blockchain
-[submodule "ethgreen_blockchain"]
-	path = ethgreen_blockchain
-	url = https://github.com/ethgreen/ethgreen-blockchain
-[submodule "melon_blockchain"]
-	path = melon_blockchain
-	url = https://github.com/mELON-Network/melon-blockchain
-[submodule "skynet_blockchain"]
-	path = skynet_blockchain
-	url = https://github.com/SkynetNetwork/skynet-blockchain
-[submodule "staicoin_blockchain"]
-	path = staicoin_blockchain
-	url = https://github.com/STATION-I/staicoin-blockchain
-[submodule "chives_blockchain"]
-	path = chives_blockchain
-	url = https://github.com/HiveProject2021/chives-blockchain
-[submodule "gold_blockchain"]
-	path = gold_blockchain
-	url = https://github.com/goldcoin-gl/gold-blockchain
-[submodule "joker_blockchain"]
-	path = joker_blockchain
-	url = https://github.com/joker-network/joker-blockchain
-[submodule "profit_blockchain"]
-	path = profit_blockchain
-	url = https://github.com/ProfitCrypto/profit-blockchain
-[submodule "ecostake_blockchain"]
-	path = ecostake_blockchain
-	url = https://github.com/Ecostake-Network/ecostake-blockchain
+	url = https://github.com/ageorge95/chia-blockchain
+	branch = v1.3.2
