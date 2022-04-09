@@ -3,7 +3,6 @@ from time import sleep
 from queue import Empty
 from os import path
 from traceback import format_exc
-from subprocess import PIPE, check_output, CREATE_NO_WINDOW
 from webbrowser import open_new
 import sys
 from PIL import Image
@@ -21,8 +20,9 @@ from tkinter import tix,\
     Label,\
     NONE
 
-from _00_base import configure_logger_and_queue
-from _00_back_end import SERPENT_back_end
+from _00_base import configure_logger_and_queue,\
+    handle_SERPENT_config
+from _00_back_end import SERPENT
 
 class buttons_label_state_change():
     entry_coin_filter: Entry
@@ -165,7 +165,6 @@ class ConsoleUi(configure_logger_and_queue):
         self.scrolled_text.configure(state='disabled')
 
 class FormControls(buttons_label_state_change,
-                   SERPENT_back_end,
                    configure_logger_and_queue,
                    ):
 
@@ -177,6 +176,8 @@ class FormControls(buttons_label_state_change,
 
         self.label_hover_hints = Label(self.frame, text='NOTE: Hover on the widgets below for more info.')
         self.label_hover_hints.grid(column=0, row=0)
+
+        self.config_SERPENT = handle_SERPENT_config()
 
         def coin_to_filter(*args):
             self.combobox_asset_to_use.configure(values=list(filter(lambda x: self.entry_coin_filter.get().lower() in x.lower(),
@@ -290,39 +291,25 @@ class FormControls(buttons_label_state_change,
         return True
 
     def master_initiate_transfer(self,
-                                 use_farmer_sk):
+                                 use_farmer_sk: bool):
         if self.check_coin_selection() and self.check_address_to_send() and self.check_amount_fees():
             def action():
                 self.disable_all_buttons()
                 self.backend_label_busy(text='Busy with transferring the funds !')
-                self._log.info('Backend process detached. Please wait ...')
-
-                cli_path = [path.join(path.dirname(__file__), f"CLI_{ open(path.join(sys._MEIPASS, 'version.txt'), 'r').read() }.exe")]\
-                    if '_MEIPASS' in sys.__dict__ \
-                    else [sys.executable, "_00_CLI.py"]
+                self._log.info('Backend process started. Please wait ...')
 
                 try:
-                    process_out = check_output(cli_path+
-                                               [f"--coin={ self.asset_to_use.get().split('__')[0] }",
-                                                f"--mnemonic={ self.entry_mnemonic.get('1.0', END).strip() }",
-                                                f"--sendToAddr={ self.entry_send_to_address.get('1.0', END).strip() }",
-                                                f"--amount={ float(self.entry_send_to_amount.get()) }",
-                                                f"--fees={ float(self.entry_attached_fee.get()) }",
-                                                "--no-logger"] + (["--farmerSK"] if use_farmer_sk else []),
-                                               stderr=PIPE, stdin=PIPE, creationflags=CREATE_NO_WINDOW
-                                       )
-
-                    messages_as_list = eval(process_out.decode('utf-8').split('$$')[1])
-                    for message in messages_as_list:
-                        # getattr seems to fail here ...
-                        if message[0] == 'info':
-                            self._log.info(message[1])
-                        elif message[0] == 'error':
-                            self._log.error(message[1])
-                        else:
-                            self._log.info(message[1])
+                    snake = SERPENT(asset=self.asset_to_use.get().split('__')[0],
+                                    mnemonic=self.entry_mnemonic.get('1.0', END).strip(),
+                                    send_to_address=self.entry_send_to_address.get('1.0', END).strip(),
+                                    amount_to_transfer=float(self.entry_send_to_amount.get()),
+                                    fee=float(self.entry_attached_fee.get()),
+                                    use_farmer_sk=use_farmer_sk)
+                    snake.create_unsigned_transaction()
+                    snake.sign_tx()
+                    snake.push_tx()
                 except:
-                    self._log.error(f'Could not execute the backend process ! \n{ format_exc(chain=False) }')
+                    self._log.error(f'Could not execute the transfer ! \n{ format_exc(chain=False) }')
 
                 self.enable_all_buttons()
                 self.backend_label_free()

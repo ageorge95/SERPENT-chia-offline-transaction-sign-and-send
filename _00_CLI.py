@@ -1,16 +1,16 @@
 from argparse import ArgumentParser
-from asyncio import run
-from logging import getLogger
-from _00_base import configure_logger_and_queue
-from _00_back_end import SERPENT_back_end
+from _00_base import configure_logger_and_queue,\
+    handle_SERPENT_config
+from _00_back_end import SERPENT
 import os,\
     sys
+from logging import getLogger
+from traceback import format_exc
 
-class SERPENTcli(configure_logger_and_queue,
-                SERPENT_back_end):
+class CLI_helper():
 
     def __init__(self):
-        super(SERPENTcli, self).__init__()
+        self.config_SERPENT = handle_SERPENT_config()
 
     def return_configured_coins(self):
         return [entry[0] for entry in self.config_SERPENT.items()]
@@ -27,7 +27,7 @@ parser = ArgumentParser(description='CLI: WILLOW-chia-forks-offline-wallet-balan
 parser.add_argument('-c',
                     '--coin',
                     type=str,
-                    help='Coin (asset) to be processed, Can be one of the following: {}'.format('|'.join(coin for coin in SERPENTcli().return_configured_coins())))
+                    help='Coin (asset) to be processed, Can be one of the following: {}'.format('|'.join(coin for coin in CLI_helper().return_configured_coins())))
 
 parser.add_argument('-m',
                     '--mnemonic',
@@ -52,19 +52,20 @@ parser.add_argument('-f',
                     help='Fees to attach to the transaction.',
                     default = 0)
 
-parser.add_argument('--logger', dest='logger', action='store_true')
-parser.add_argument('--no-logger', dest='logger', action='store_false')
 parser.add_argument('--farmerSK', dest='farmerSK', action='store_true')
-parser.set_defaults(logger=True)
 parser.set_defaults(farmerSK=False)
 
 if __name__ == '__main__':
+
+    configure_logger_and_queue()
+
+    _log = getLogger()
 
     os.system("color") # enable color in the console
 
     args = parser.parse_args()
 
-    SERPENTobj = SERPENTcli()
+    SERPENTobj = CLI_helper()
 
     if not SERPENTobj.check_valid_coin(coin=args.coin):
         sys.exit('Your coin is not in the config: {}'.format(args.coin))
@@ -78,22 +79,16 @@ if __name__ == '__main__':
     if not args.amount:
         sys.exit('How much shall I send ? Please provide an amount !')
 
-    message_payload = run(SERPENTobj.initiate_transfer(asset=args.coin,
-                                                       mnemonic=args.mnemonic,
-                                                       send_to_address=args.sendToAddr,
-                                                       amount_to_send=args.amount,
-                                                       fees_to_attach=args.fees,
-                                                       use_farmer_sk=args.farmerSK))
-
-    if not args.logger:
-        print('$${}$$'.format(str(message_payload)))
-    else:
-        log = getLogger()
-        for message in message_payload:
-            # getattr seems to fail here ...
-            if message[0] == 'info':
-                log.info(message[1])
-            elif message[0] == 'error':
-                log.error(message[1])
-            else:
-                log.info(message[1])
+    try:
+        print(args.mnemonic)
+        snake = SERPENT(asset=args.coin,
+                       mnemonic=args.mnemonic,
+                       send_to_address=args.sendToAddr,
+                       amount_to_transfer=args.amount,
+                       fee = args.fees,
+                       use_farmer_sk = args.farmerSK
+                       )
+        snake.create_unsigned_transaction()
+        snake.sign_tx()
+    except:
+        _log.error(f"Failed to execute SERPENT:\n{format_exc(chain=False)}")
