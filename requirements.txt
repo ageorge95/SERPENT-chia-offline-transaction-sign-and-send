@@ -24,7 +24,5 @@ websockets
 pillow
 requests
 nest-asyncio
-skynetpos
-skynetvdf
 filelock
 clvm-rs
