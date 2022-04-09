@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from _00_base import configure_logger_and_queue,\
+from _00_SERPENT_base import configure_logger_and_queue,\
     handle_SERPENT_config
 from _00_back_end import SERPENT
 import os,\

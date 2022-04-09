@@ -38,7 +38,7 @@ import requests
 requests.packages.urllib3.disable_warnings()
 from traceback import format_exc
 from yaml import safe_load
-from _00_base import handle_SERPENT_config
+from _00_SERPENT_base import handle_SERPENT_config
 from logging import getLogger
 
 class FullNodeAPIwrapper():
