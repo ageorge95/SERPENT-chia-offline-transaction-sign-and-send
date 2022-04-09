@@ -59,7 +59,7 @@ def configure_logger():
     fh.setFormatter(Formatter('%(asctime)s,%(msecs)d %(levelname)-4s [%(filename)s:%(lineno)d -> %(name)s - %(funcName)s] ___ %(message)s'))
 
     basicConfig(datefmt='%Y-%m-%d:%H:%M:%S',
-                level=DEBUG,
+                level=INFO,
                 handlers=[
                     fh,
                     ch
