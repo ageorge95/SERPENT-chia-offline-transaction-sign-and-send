@@ -322,4 +322,4 @@ class SERPENT():
     ) -> None:
         response = self.full_node_API_wrapper.query_full_node(url_option='push_tx',
                                                    json_data={"spend_bundle": self.signed_spend_bundle.to_json_dict()})
-        self._log.info(f"Full node response: {response}")
+        self._log.info(f"Full node response: $${response}$$")
