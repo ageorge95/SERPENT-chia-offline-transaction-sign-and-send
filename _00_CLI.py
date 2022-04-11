@@ -90,5 +90,6 @@ if __name__ == '__main__':
                        )
         snake.create_unsigned_transaction()
         snake.sign_tx()
+        snake.push_tx()
     except:
         _log.error(f"Failed to execute SERPENT:\n{format_exc(chain=False)}")
