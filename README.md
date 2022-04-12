@@ -1,8 +1,11 @@
 # SERPENT-chia-offline-transaction-sign-and-send
-- send funds from the hardened & unhardened addresses of a given mnemonic (master_sk)
-- send funds from the staking addresses of a given mnemonic (farmer_sk)
-- the tool generates a spend bundle, signs it and pushes it to the full node for processing
-- the full node needs to be running for the tool to work
+- The tool:
+  - can send funds from the hardened & unhardened addresses of a given mnemonic (master_sk)
+  - can send funds from the staking addresses of a given mnemonic (farmer_sk)
+  - works by generating, signing and pushing a spend bundle to the full node for processing
+
+- The tool needs:
+  - a running and synced full node
 
 ## Contributors
 
