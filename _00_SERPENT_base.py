@@ -5,7 +5,8 @@ from logging import basicConfig,\
     getLogger
 from sys import stdout
 from queue import Queue
-from os import path as os_path
+from os import path as os_path,\
+    system
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from json import load,\
     dump
@@ -83,6 +84,8 @@ class QueueHandler(Handler):
 
 class configure_logger_and_queue():
     def __init__(self):
+
+        system("color")  # enable color in the console
 
         super(configure_logger_and_queue, self).__init__()
 

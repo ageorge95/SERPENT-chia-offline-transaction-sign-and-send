@@ -61,8 +61,6 @@ if __name__ == '__main__':
 
     _log = getLogger()
 
-    os.system("color") # enable color in the console
-
     args = parser.parse_args()
 
     SERPENTobj = CLI_helper()
