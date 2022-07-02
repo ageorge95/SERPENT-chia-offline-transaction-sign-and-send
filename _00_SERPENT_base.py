@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XPT': {'denominator': 1000000000000,
+initial_config = {'XSE': {'denominator': 1000000000000,
+                          'friendly_name': 'seno',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.seno2\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                  'XPT': {'denominator': 1000000000000,
                           'friendly_name': 'petroleum',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '7cd1b01aee581a631e3a49de6b83eb322cdb36fcbac537fa7ecf5eb847f0cc46',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
