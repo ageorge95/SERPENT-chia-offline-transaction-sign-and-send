@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XSE': {'denominator': 1000000000000,
+initial_config = {'LLC': {'denominator': 1000,
+                          'friendly_name': 'littlelambocoin',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '37239041ddc6cc13486bc0017ac345b7e7a5230ff18a958ba941163dc63bbe39',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.littlelambocoin\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                  'XSE': {'denominator': 1000000000000,
                           'friendly_name': 'seno',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'ccd5bb71183532bff220ba46c268991a3ff07eb358e8255a65c30a2dce0e5fbb',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
