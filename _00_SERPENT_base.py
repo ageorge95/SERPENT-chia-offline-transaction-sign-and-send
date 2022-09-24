@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'LLC': {'denominator': 1000,
+initial_config = {'MOC': {'denominator': 1000000000000,
+                          'friendly_name': 'moon',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '5b2831b6ae5b7da201a4a03d7ad0bddf44bfb2c297ae92acfc901a0616566fba',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.moon\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                 'LLC': {'denominator': 1000,
                           'friendly_name': 'littlelambocoin',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '37239041ddc6cc13486bc0017ac345b7e7a5230ff18a958ba941163dc63bbe39',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
