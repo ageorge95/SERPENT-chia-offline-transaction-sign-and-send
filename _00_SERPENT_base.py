@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'MOC': {'denominator': 1000000000000,
+initial_config = {'XCF': {'denominator': 1000000000000,
+                          'friendly_name': 'coffee',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'e91125c363572bbe07bd3876ce80501159e706edecb36b148e23d5e13b7917e6',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.coffee\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                  'MOC': {'denominator': 1000000000000,
                           'friendly_name': 'moon',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '5b2831b6ae5b7da201a4a03d7ad0bddf44bfb2c297ae92acfc901a0616566fba',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
