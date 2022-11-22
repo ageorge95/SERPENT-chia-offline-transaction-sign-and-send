@@ -86,7 +86,7 @@ class SERPENT():
         self.fee = int(fee * self.config_SERPENT[asset]['denominator'])
         self.amount_to_transfer = int(amount_to_transfer * self.config_SERPENT[asset]['denominator'])
         self.send_to_address = send_to_address
-        self.seed: bytes = mnemonic_to_seed(mnemonic, passphrase="")
+        self.seed: bytes = mnemonic_to_seed(mnemonic)
         self.addresses_to_check = addresses_to_check
         self.full_node_API_wrapper = FullNodeAPIwrapper(config_root=self.config_SERPENT[asset]['config_root'])
 
@@ -162,7 +162,7 @@ class SERPENT():
         """
         program = simple_solution_generator(bundle)
         npc_result = get_name_puzzle_conditions(generator=program,
-                                                max_cost=self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM'] * 0.5,
+                                                max_cost=int(self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM'] * 0.5),
                                                 cost_per_byte=self.config_SERPENT[self.asset]['COST_PER_BYTE'],
                                                 mempool_mode=True)
         cost = npc_result.cost
@@ -323,3 +323,4 @@ class SERPENT():
         response = self.full_node_API_wrapper.query_full_node(url_option='push_tx',
                                                    json_data={"spend_bundle": self.signed_spend_bundle.to_json_dict()})
         self._log.info(f"Full node response: $${response}$$")
+
