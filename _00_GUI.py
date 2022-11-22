@@ -19,6 +19,7 @@ from tkinter import tix,\
     END,\
     Label,\
     NONE
+import asyncio
 
 from _00_SERPENT_base import configure_logger_and_queue,\
     handle_SERPENT_config
@@ -293,7 +294,7 @@ class FormControls(buttons_label_state_change,
     def master_initiate_transfer(self,
                                  use_farmer_sk: bool):
         if self.check_coin_selection() and self.check_address_to_send() and self.check_amount_fees():
-            def action():
+            async def action():
                 self.disable_all_buttons()
                 self.backend_label_busy(text='Busy with transferring the funds !')
                 self._log.info('Backend process started. Please wait ...')
@@ -313,7 +314,11 @@ class FormControls(buttons_label_state_change,
 
                 self.enable_all_buttons()
                 self.backend_label_free()
-            Thread(target=action).start()
+
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(action())
+            # using threading would cause clvm to "panick"
+            # Thread(target=action).start()
 
 class App():
 
