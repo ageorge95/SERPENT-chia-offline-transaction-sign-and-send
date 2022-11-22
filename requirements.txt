@@ -26,3 +26,4 @@ requests
 nest-asyncio
 filelock
 clvm-rs
+filelock

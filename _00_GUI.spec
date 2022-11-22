@@ -42,7 +42,8 @@ a = Analysis(['_00_GUI.py'],
 							'pillow',
 							'requests',
 							'filelock',
-							'clvm-rs'
+							'clvm-rs',
+							'filelock'
 			 ],
              hookspath=[],
              hooksconfig={},
