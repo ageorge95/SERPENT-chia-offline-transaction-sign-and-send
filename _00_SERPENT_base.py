@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XCF': {'denominator': 1000000000000,
+initial_config = {'GBTC': {'denominator': 1000000000000,
+                          'friendly_name': 'greenbtc',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'b8aae2dac69218331178a63bd89dd44c275ff199ca11bfd54d928a23e0682388',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.greenbtc\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                  'XCF': {'denominator': 1000000000000,
                           'friendly_name': 'coffee',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'e91125c363572bbe07bd3876ce80501159e706edecb36b148e23d5e13b7917e6',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
