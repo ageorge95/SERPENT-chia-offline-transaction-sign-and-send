@@ -11,6 +11,7 @@ chiavdf
 click
 clvm
 clvm-tools
+clvm-tools-rs
 colorama
 colorlog
 concurrent-log-handler
@@ -27,3 +28,4 @@ nest-asyncio
 filelock
 clvm-rs
 filelock
+typing_extensions
