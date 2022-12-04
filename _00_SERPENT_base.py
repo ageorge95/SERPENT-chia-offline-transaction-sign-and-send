@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'GBTC': {'denominator': 1000000000000,
+initial_config = {'KIK': {'denominator': 1000000,
+                          'friendly_name': 'kiwi',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'e0bfd78158a71c7866fb5953ed66ec8583006504f1df7161fa37ddf99f53b772',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.kiwi\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                  'GBTC': {'denominator': 1000000000000,
                           'friendly_name': 'greenbtc',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'b8aae2dac69218331178a63bd89dd44c275ff199ca11bfd54d928a23e0682388',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
