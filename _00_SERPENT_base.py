@@ -100,7 +100,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'KIK': {'denominator': 1000000,
+initial_config = {'XONE': {'denominator': 100000000,
+                          'friendly_name': 'one',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': 'a36796ff4f86878e0a692623dda8cc32369a027006886c4f352b90e17c1ce82a',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}\.one\mainnet\config",
+                          'wallet_sk_derivation_port': 8444},
+                  'KIK': {'denominator': 1000000,
                           'friendly_name': 'kiwi',
                           'AGG_SIG_ME_ADDITIONAL_DATA': 'e0bfd78158a71c7866fb5953ed66ec8583006504f1df7161fa37ddf99f53b772',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
