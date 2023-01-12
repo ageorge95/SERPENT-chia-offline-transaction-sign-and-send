@@ -54,16 +54,21 @@ class FullNodeAPIwrapper():
                         url_option,
                         json_data):
         try:
-            return requests.post(url=f"https://localhost:{self.config['full_node']['rpc_port']}/{url_option}",
+            node_response_raw = requests.post(url=f"https://localhost:{self.config['full_node']['rpc_port']}/{url_option}",
                                  verify=False,
                                  cert=(path.join(self.config_root, 'ssl/full_node/private_full_node.crt'),
                                        path.join(self.config_root, 'ssl/full_node/private_full_node.key')),
                                  headers = {'content-type': 'application/json'},
                                  json=json_data,
-                                 ).json()
+                                 )
+            try:
+                node_response = node_response_raw.json()
+                return node_response
+            except:
+                self._log.error(f"Abnormal full node response: {node_response_raw.text}")
+                return None
         except:
-            self._log.error(f"Error found while querying the full node, {url_option}"
-                            f" with json {json_data}:\n{format_exc(chain=False)}")
+            self._log.error(f"Error found while querying the full node at {url_option}\n{format_exc(chain=False)}")
             return None
 
 class SERPENT():
