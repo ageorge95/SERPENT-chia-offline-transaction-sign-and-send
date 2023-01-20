@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
-from _00_SERPENT_base import configure_logger_and_queue,\
+from src._00_SERPENT_base import configure_logger_and_queue,\
     handle_SERPENT_config
-from _00_back_end import SERPENT
+from src._00_back_end import SERPENT
 import os,\
     sys
 from logging import getLogger
@@ -55,7 +55,7 @@ parser.add_argument('-f',
 parser.add_argument('--farmerSK', dest='farmerSK', action='store_true')
 parser.set_defaults(farmerSK=False)
 
-if __name__ == '__main__':
+def main():
 
     configure_logger_and_queue()
 
@@ -91,3 +91,6 @@ if __name__ == '__main__':
         snake.push_tx()
     except:
         _log.error(f"Failed to execute SERPENT:\n{format_exc(chain=False)}")
+
+if __name__ == '__main__':
+    main()
