@@ -28,3 +28,4 @@ nest-asyncio
 filelock
 clvm-rs
 typing_extensions
+chia-rs

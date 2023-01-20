@@ -9,7 +9,9 @@
 
 ## Contributors
 
-![alt text](https://c.tenor.com/FDwYMy302gMAAAAM/tumbleweed-silence.gif?raw=true)
+- [WarutaShinken](https://github.com/WarutaShinken)
+  - Ubuntu Source Install
+  - Python virtual environment on Windows
 
 # Feedback/ Contribution
 - Please post any issues you encountered or any feature requests using the issues tab.
@@ -17,7 +19,7 @@
 - Also, feel free to contribute to the tool's development with a PR.
 
 # How to use
-The tool was designed mainly for Windows, but should work on every OS where python is supported.
+The tool supports Windows 10 and Ubuntu (and possibly Debian, but this is untested). Getting it to run on other Unix-based operating systems will require swapping out the package managers used in `install.sh`.
 
 It can used as a sub-module, so if you want to include it in a bigger set of scripts, you can do that 🙂. Just import _00_back_end.SERPENT_back_end and you are good to go.
 
@@ -26,8 +28,41 @@ NOTE#1: Using it as a sub-module may get you to fall into a rabbit hole. For tha
 NOTE#2: Long story short you have 3 ways to use SERPENT in your scripts:
 
   - M#1 using the SERPENT class directly  
-  - M#2 using _00_CLI.py to direct your queries (recommended)  
+  - M#2 using a source install of SERPENT
   - M#3 using the compiled CLI exe (more I/O overhead then M#2)
+
+## Source Install
+
+Just like with Chia, you can install and run SERPENT from source.
+
+### Installation
+
+```
+git clone https://github.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send serpent
+cd serpent
+install.sh # if you're on Linux
+Install.bat :: if you're on Windows
+```
+
+### CLI
+
+Activate the Python virtual environment to use SERPENT's CLI:
+
+```
+activate
+serpent -h
+deactivate
+```
+
+### GUI (Windows only)
+
+You can either run `START_SERPENT_GUI.bat` or use the following commands:
+
+```
+activate
+gui_serpent
+deactivate
+```
 
 ## WINDOWS usage - instructions
 

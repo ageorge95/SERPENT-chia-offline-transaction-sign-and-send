@@ -1,7 +1,7 @@
 import tkinter as tk
 from time import sleep
 from queue import Empty
-from os import path
+from os import path, chdir, name
 from traceback import format_exc
 from webbrowser import open_new
 import sys
@@ -21,9 +21,9 @@ from tkinter import tix,\
     NONE
 import asyncio
 
-from _00_SERPENT_base import configure_logger_and_queue,\
+from src._00_SERPENT_base import configure_logger_and_queue,\
     handle_SERPENT_config
-from _00_back_end import SERPENT
+from src._00_back_end import SERPENT
 
 class buttons_label_state_change():
     entry_coin_filter: Entry
@@ -323,6 +323,8 @@ class FormControls(buttons_label_state_change,
 class App():
 
     def __init__(self, root):
+        chdir(path.dirname(__file__))
+
         self.root = root
         self.root.title('SERPENT-chia-offline-transaction-sign-and-send | ' + open('version.txt' if path.isfile('version.txt') else path.join(sys._MEIPASS, 'version.txt') , 'r').read())
         self.root.iconbitmap('icon.ico' if path.isfile('icon.ico') else path.join(sys._MEIPASS, 'icon.ico'))
