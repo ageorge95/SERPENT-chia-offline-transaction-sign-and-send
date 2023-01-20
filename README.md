@@ -72,7 +72,7 @@ deactivate
 
 GUI overview:
    
-![alt text](ReadMe_res/GUI_overview.jpg?raw=true)
+![alt text](media/GUI_overview.jpg?raw=true)
 
 OR
 
@@ -82,7 +82,7 @@ OR
 
 2.2.1. Just launch the CLI in your favourite console with the -h switch to see the usage instructions; As of now those are:
 
-![alt text](ReadMe_res/CLI_overview.jpg?raw=true)
+![alt text](media/CLI_overview.jpg?raw=true)
 
 # Support
 Found this project useful? Send your ❤ in any form you can 🙂. Please contact me if you donated and want to be added to the contributors list !

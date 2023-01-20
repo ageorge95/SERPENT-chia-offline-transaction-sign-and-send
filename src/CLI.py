@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
-from src._00_SERPENT_base import configure_logger_and_queue,\
+from src.base import configure_logger_and_queue,\
     handle_SERPENT_config
-from src._00_back_end import SERPENT
+from src.back_end import SERPENT
 import os,\
     sys
 from logging import getLogger
