@@ -14,6 +14,7 @@ clvm-tools
 clvm-tools-rs
 colorama
 colorlog
+chia_rs
 concurrent-log-handler
 cryptography
 dnspython
