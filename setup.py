@@ -1,12 +1,14 @@
 from setuptools import setup
 
 setup(
+    name="SERPENT",
     packages=[],
     entry_points={
         "console_scripts": [
-            "serpent = src._00_CLI:main",
+            "SERPENT = src._00_CLI:main",
             # Windows only
-            "gui_serpent = src._00_GUI:main",
+            "GUI_SERPENT = src._00_GUI:main",
         ]
-    }
+    },
+    version=open("src/version.txt", "r").readline()
 )
