@@ -75,8 +75,7 @@ class sponsor_reminder():
 
         self.label_sponsor_logo = Label(self.frame, text='Sponsor')
         self.label_sponsor_logo.grid(column=0, row=0)
-        donation_img = 'donation.gif' if path.isfile('../media/donation.gif') else path.join(sys._MEIPASS,
-                                                                                             '../media/donation.gif')
+        donation_img = '../media/donation.gif' if path.isfile('../media/donation.gif') else 'media/donation.gif'
         info = Image.open(donation_img)
         self.frameCnt = info.n_frames-3
         self.sleep_between_frames = 0.1
@@ -327,9 +326,8 @@ class App():
         chdir(path.dirname(__file__))
 
         self.root = root
-        self.root.title('SERPENT-chia-offline-transaction-sign-and-send | ' + open('version.txt' if path.isfile('version.txt') else path.join(sys._MEIPASS, 'version.txt') , 'r').read())
-        self.root.iconbitmap('icon.ico' if path.isfile('../media/icon.ico') else path.join(sys._MEIPASS,
-                                                                                           '../media/icon.ico'))
+        self.root.title('SERPENT | ' + open('version.txt' if path.isfile('version.txt') else path.join('src', 'version.txt') , 'r').read())
+        self.root.iconbitmap('../media/icon.ico' if path.isfile('../media/icon.ico') else 'media/icon.ico')
 
         sponsor_frame = ttk.Labelframe(text="Sponsor")
         sponsor_frame.grid(row=0, column=0, sticky="nsw")
