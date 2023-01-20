@@ -14,6 +14,7 @@ clvm-tools
 clvm-tools-rs
 colorama
 colorlog
+chia-rs
 concurrent-log-handler
 cryptography
 dnspython
@@ -28,4 +29,3 @@ nest-asyncio
 filelock
 clvm-rs
 typing_extensions
-chia-rs
