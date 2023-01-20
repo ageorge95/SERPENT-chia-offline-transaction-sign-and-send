@@ -18,6 +18,7 @@ python setup.py install
 
 mklink /j venv\Scripts\chia chia_blockchain\chia
 mklink /j venv\Scripts\src src
+mklink /j venv\Scripts\media media
 
 :: post-installation message
 
