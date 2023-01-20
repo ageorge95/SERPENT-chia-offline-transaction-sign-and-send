@@ -1,9 +1,4 @@
-import sys
 from os import path
-# needed because of the chia-blockchain submodule
-try: sys.path.append(path.join(sys._MEIPASS, 'chia_blockchain'))
-except: sys.path.append(path.join(path.dirname(__file__), 'chia_blockchain'))
-
 from chia.wallet.derive_keys import master_sk_to_farmer_sk
 from chia.wallet.wallet import Wallet
 from chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import puzzle_for_pk,\
