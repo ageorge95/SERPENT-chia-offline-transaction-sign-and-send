@@ -10,15 +10,15 @@ mklink /j chia chia_blockchain\chia
 python -m venv venv
 :: Windows doesn't allow the creation of symlinks without special priviledges, so hardlinks are created instead.
 mklink /h activate.bat venv\Scripts\activate.bat
+mklink /j venv\Scripts\chia chia_blockchain\chia
+mklink /j venv\Scripts\src src
+mklink /j venv\Scripts\media media
+
 call activate.bat
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python setup.py install
-
-mklink /j venv\Scripts\chia chia_blockchain\chia
-mklink /j venv\Scripts\src src
-mklink /j venv\Scripts\media media
 
 :: post-installation message
 
