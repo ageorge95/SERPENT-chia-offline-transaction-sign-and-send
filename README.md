@@ -38,8 +38,8 @@ sh install.sh
 
 ## Windows (tested with win10Pro, win11Pro)
 ### Prerequisites
-git for windows: https://gitforwindows.org/
-python 3.x (>=3.9, 3.11 is recommended): https://www.python.org/downloads/
+- git for windows: https://gitforwindows.org/
+- python 3.x (>=3.9, 3.11 is recommended): https://www.python.org/downloads/
 
 ### Installation
 ```
