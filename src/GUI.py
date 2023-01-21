@@ -327,7 +327,11 @@ class App():
 
         self.root = root
         self.root.title('SERPENT | ' + open('version.txt' if path.isfile('version.txt') else path.join('src', 'version.txt') , 'r').read())
-        self.root.iconbitmap('../media/icon.ico' if path.isfile('../media/icon.ico') else 'media/icon.ico')
+        if ( sys.platform.startswith('win')):
+            self.root.iconbitmap('../media/icon.ico' if path.isfile('../media/icon.ico') else 'media/icon.ico')
+        else:
+            img = tk.PhotoImage(file=f'../media/icon.gif' if path.isfile('../media/icon.gif') else 'media/icon.gif')
+            self.root.tk.call('wm', 'iconphoto', self.root._w, img)
 
         sponsor_frame = ttk.Labelframe(text="Sponsor")
         sponsor_frame.grid(row=0, column=0, sticky="nsw")
