@@ -73,6 +73,8 @@ class sponsor_reminder():
     def __init__(self, frame):
         self.frame = frame
 
+        self.exiting = False
+
         self.label_sponsor_logo = Label(self.frame, text='Sponsor')
         self.label_sponsor_logo.grid(column=0, row=0)
         donation_img = '../media/donation.gif' if path.isfile('../media/donation.gif') else 'media/donation.gif'
@@ -97,12 +99,19 @@ class sponsor_reminder():
         open_new('https://github.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send#support')
 
     def sponsor_gif_animation(self):
-        while True:
+        while not self.exiting:
             for frame_index in range(self.frameCnt):
+                if self.exiting:
+                    break
                 frame = self.frames[frame_index]
                 self.label_sponsor_logo.configure(image=frame)
                 sleep(self.sleep_between_frames)
+            if self.exiting:
+                break
             sleep(self.sleep_between_frames)
+
+    def destroy_frame(self):
+        self.exiting = True
 
 class ConsoleUi(configure_logger_and_queue):
     """Poll messages from a logging queue and display them in a scrolled text widget"""
@@ -351,6 +360,7 @@ class App():
 
     def quit(self):
         # self.root.destroy()
+        self.sponsor_frame.destroy_frame()
         sys.exit()
 
 def main():
