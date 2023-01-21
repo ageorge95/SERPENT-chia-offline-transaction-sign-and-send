@@ -5,9 +5,9 @@ setup(
     packages=[],
     entry_points={
         "console_scripts": [
-            "SERPENT = src.CLI:main",
+            "serpent = src.CLI:main",
             # Windows only
-            "GUI_SERPENT = src.GUI:main",
+            "gui_serpent = src.GUI:main",
         ]
     },
     version=open("src/version.txt", "r").readline()
