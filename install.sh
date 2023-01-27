@@ -28,6 +28,8 @@ Join the Discord server for support: https://discord.gg/yPdCmHSgMe
 Run '. activate' to activate SERPENT's Python virtual environment and
 'deactivate' to, well, deactivate it.
 
+Run 'gui_serpent' to run the GUI.
+
 Run 'serpent -h' for further instructions.
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 "

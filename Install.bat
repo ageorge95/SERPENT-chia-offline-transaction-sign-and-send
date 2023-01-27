@@ -30,9 +30,9 @@ echo.
 echo Run 'activate' to activate SERPENT's Python virtual environment and 
 echo 'deactivate' to, well, deactivate it.
 echo.
-echo Run 'GUI_SERPENT' to run the GUI.
+echo Run 'gui_serpent' to run the GUI.
 echo.
-echo Run 'SERPENT -h' for further instructions.
+echo Run 'serpent -h' for further instructions.
 echo.
 echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
