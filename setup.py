@@ -6,7 +6,6 @@ setup(
     entry_points={
         "console_scripts": [
             "serpent = src.CLI:main",
-            # Windows only
             "gui_serpent = src.GUI:main",
         ]
     },
