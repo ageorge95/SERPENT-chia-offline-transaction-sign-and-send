@@ -2,52 +2,86 @@
 - The tool:
   - can send funds from the hardened & unhardened addresses of a given mnemonic (master_sk)
   - can send funds from the staking addresses of a given mnemonic (farmer_sk)
-  - works by generating, signing and pushing a spend bundle to the full node for processing
+  - works by generating, signing and pushing a spend bundle to the full node
+  - Works with chia and with all chia forks
 
 - The tool needs:
-  - a running and synced full node
+  - a running and synced full node, the wallet service is NOT required
 
-## Contributors
+# Contributors
 
-![alt text](https://c.tenor.com/FDwYMy302gMAAAAM/tumbleweed-silence.gif?raw=true)
+- [WarutaShinken](https://github.com/WarutaShinken)
+  - Ubuntu Source Install
+  - Windows Source Install
 
-# Feedback/ Contribution
+## Feedback/ Contribution
 - Please post any issues you encountered or any feature requests using the issues tab.
 - Do not forget to join the Discord server dedicated for this tool: https://discord.gg/yPdCmHSgMe
 - Also, feel free to contribute to the tool's development with a PR.
 
-# How to use
-The tool was designed mainly for Windows, but should work on every OS where python is supported.
+# Setup
+## Ubuntu (tested with 22.04.1)
+### Prerequisites
+```
+sudo apt install git
+sudo apt install python3-venv
+sudo apt install python3-tk
+sudo apt install tix
+```
 
-It can used as a sub-module, so if you want to include it in a bigger set of scripts, you can do that 🙂. Just import _00_back_end.SERPENT_back_end and you are good to go.
+### Installation
+```
+git clone https://github.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send serpent
+cd serpent
+sh install.sh
+```
 
-NOTE#1: Using it as a sub-module may get you to fall into a rabbit hole. For that reason, recently a CLI interface was implemented which will completely isolate your scripts from SERPENT.
+## Windows (tested with win10Pro, win11Pro)
+### Prerequisites
+- git for windows: https://gitforwindows.org/
+- python 3.x (>=3.9, 3.11 is recommended): https://www.python.org/downloads/
 
-NOTE#2: Long story short you have 3 ways to use SERPENT in your scripts:
+### Installation
+```
+git clone https://github.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send serpent
+cd serpent
+install.bat
+```
 
-  - M#1 using the SERPENT class directly  
-  - M#2 using _00_CLI.py to direct your queries (recommended)  
-  - M#3 using the compiled CLI exe (more I/O overhead then M#2)
+# Usage modes
+## CLI
 
-## WINDOWS usage - instructions
+![alt text](media/CLI_overview.jpg?raw=true)
 
-1.1. Have the full node running and synced for the coin for which you want to do a transfer.
+### Windows
+```
+activate
+serpent -h
+deactivate
+```
+### Ubuntu
+```
+. activate
+serpent -h
+deactivate
+```
 
-1.2. Run the compiled exe for windows and follow the instructions on screen.
+## GUI
+  
+![alt text](media/GUI_overview.jpg?raw=true)
 
-GUI overview:
-   
-![alt text](ReadMe_res/GUI_overview.jpg?raw=true)
-
-OR
-
-2.1. Have the full node db of the coin you are about to check.
-
-2.2. Use the compiled CLI interface you are more of a console type of person
-
-2.2.1. Just launch the CLI in your favourite console with the -h switch to see the usage instructions; As of now those are:
-
-![alt text](ReadMe_res/CLI_overview.jpg?raw=true)
+### Windows
+```
+activate
+gui_serpent
+deactivate
+```
+### Ubuntu
+```
+. activate
+gui_serpent
+deactivate
+```
 
 # Support
 Found this project useful? Send your ❤ in any form you can 🙂. Please contact me if you donated and want to be added to the contributors list !

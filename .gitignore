@@ -5,3 +5,6 @@ runtime_log.log
 config_SERPENT.json
 /main.sym
 /.__runtime_log.lock
+chia
+venv
+activate.bat

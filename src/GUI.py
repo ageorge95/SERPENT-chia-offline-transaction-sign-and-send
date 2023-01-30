@@ -1,7 +1,7 @@
 import tkinter as tk
 from time import sleep
 from queue import Empty
-from os import path
+from os import path, chdir, name
 from traceback import format_exc
 from webbrowser import open_new
 import sys
@@ -21,9 +21,9 @@ from tkinter import tix,\
     NONE
 import asyncio
 
-from _00_SERPENT_base import configure_logger_and_queue,\
+from src.base import configure_logger_and_queue,\
     handle_SERPENT_config
-from _00_back_end import SERPENT
+from src.back_end import SERPENT
 
 class buttons_label_state_change():
     entry_coin_filter: Entry
@@ -73,9 +73,11 @@ class sponsor_reminder():
     def __init__(self, frame):
         self.frame = frame
 
+        self.exiting = False
+
         self.label_sponsor_logo = Label(self.frame, text='Sponsor')
         self.label_sponsor_logo.grid(column=0, row=0)
-        donation_img = 'donation.gif' if path.isfile('donation.gif') else path.join(sys._MEIPASS, 'donation.gif')
+        donation_img = '../media/donation.gif' if path.isfile('../media/donation.gif') else 'media/donation.gif'
         info = Image.open(donation_img)
         self.frameCnt = info.n_frames-3
         self.sleep_between_frames = 0.1
@@ -97,12 +99,19 @@ class sponsor_reminder():
         open_new('https://github.com/ageorge95/SERPENT-chia-offline-transaction-sign-and-send#support')
 
     def sponsor_gif_animation(self):
-        while True:
+        while not self.exiting:
             for frame_index in range(self.frameCnt):
+                if self.exiting:
+                    break
                 frame = self.frames[frame_index]
                 self.label_sponsor_logo.configure(image=frame)
                 sleep(self.sleep_between_frames)
+            if self.exiting:
+                break
             sleep(self.sleep_between_frames)
+
+    def destroy_frame(self):
+        self.exiting = True
 
 class ConsoleUi(configure_logger_and_queue):
     """Poll messages from a logging queue and display them in a scrolled text widget"""
@@ -323,9 +332,15 @@ class FormControls(buttons_label_state_change,
 class App():
 
     def __init__(self, root):
+        chdir(path.dirname(__file__))
+
         self.root = root
-        self.root.title('SERPENT-chia-offline-transaction-sign-and-send | ' + open('version.txt' if path.isfile('version.txt') else path.join(sys._MEIPASS, 'version.txt') , 'r').read())
-        self.root.iconbitmap('icon.ico' if path.isfile('icon.ico') else path.join(sys._MEIPASS, 'icon.ico'))
+        self.root.title('SERPENT | ' + open('version.txt' if path.isfile('version.txt') else path.join('src', 'version.txt') , 'r').read())
+        if ( sys.platform.startswith('win')):
+            self.root.iconbitmap('../media/icon.ico' if path.isfile('../media/icon.ico') else 'media/icon.ico')
+        else:
+            img = tk.PhotoImage(file=f'../media/icon.gif' if path.isfile('../media/icon.gif') else 'media/icon.gif')
+            self.root.tk.call('wm', 'iconphoto', self.root._w, img)
 
         sponsor_frame = ttk.Labelframe(text="Sponsor")
         sponsor_frame.grid(row=0, column=0, sticky="nsw")
@@ -345,6 +360,7 @@ class App():
 
     def quit(self):
         # self.root.destroy()
+        self.sponsor_frame.destroy_frame()
         sys.exit()
 
 def main():

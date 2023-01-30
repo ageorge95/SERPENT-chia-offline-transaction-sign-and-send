@@ -1,30 +1,25 @@
-import sys
 from os import path
-# needed because of the chia-blockchain submodule
-try: sys.path.append(path.join(sys._MEIPASS, 'chia_blockchain'))
-except: sys.path.append(path.join(path.dirname(__file__), 'chia_blockchain'))
-
-from chia_blockchain.chia.wallet.derive_keys import master_sk_to_farmer_sk
-from chia_blockchain.chia.wallet.wallet import Wallet
-from chia_blockchain.chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import puzzle_for_pk,\
+from chia.wallet.derive_keys import master_sk_to_farmer_sk
+from chia.wallet.wallet import Wallet
+from chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import puzzle_for_pk,\
     calculate_synthetic_secret_key,\
     DEFAULT_HIDDEN_PUZZLE_HASH
-from chia_blockchain.chia.util.keychain import mnemonic_to_seed
-from chia_blockchain.chia.util.bech32m import encode_puzzle_hash,\
+from chia.util.keychain import mnemonic_to_seed
+from chia.util.bech32m import encode_puzzle_hash,\
     decode_puzzle_hash
-from chia_blockchain.chia.full_node.bundle_tools import simple_solution_generator
-from chia_blockchain.chia.full_node.mempool_check_conditions import get_name_puzzle_conditions
-from chia_blockchain.chia.types.blockchain_format.sized_bytes import bytes32
-from chia_blockchain.chia.types.blockchain_format.coin import Coin
-from chia_blockchain.chia.types.blockchain_format.program import Program
-from chia_blockchain.chia.types.coin_spend import CoinSpend
-from chia_blockchain.chia.types.announcement import Announcement
-from chia_blockchain.chia.types.spend_bundle import SpendBundle
-from chia_blockchain.chia.types.condition_opcodes import ConditionOpcode
-from chia_blockchain.chia.util.hash import std_hash
-from chia_blockchain.chia.util.byte_types import hexstr_to_bytes
-from chia_blockchain.chia.util.condition_tools import parse_sexp_to_conditions
-from chia_blockchain.chia.util.condition_tools import conditions_dict_for_solution,\
+from chia.full_node.bundle_tools import simple_solution_generator
+from chia.full_node.mempool_check_conditions import get_name_puzzle_conditions
+from chia.types.blockchain_format.sized_bytes import bytes32
+from chia.types.blockchain_format.coin import Coin
+from chia.types.blockchain_format.program import Program
+from chia.types.coin_spend import CoinSpend
+from chia.types.announcement import Announcement
+from chia.types.spend_bundle import SpendBundle
+from chia.types.condition_opcodes import ConditionOpcode
+from chia.util.hash import std_hash
+from chia.util.byte_types import hexstr_to_bytes
+from chia.util.condition_tools import parse_sexp_to_conditions
+from chia.util.condition_tools import conditions_dict_for_solution,\
     pkm_pairs_for_conditions_dict
 from blspy import AugSchemeMPL,\
     PrivateKey,\
@@ -38,7 +33,7 @@ import requests
 requests.packages.urllib3.disable_warnings()
 from traceback import format_exc
 from yaml import safe_load
-from _00_SERPENT_base import handle_SERPENT_config
+from src.base import handle_SERPENT_config
 from logging import getLogger
 
 class FullNodeAPIwrapper():
