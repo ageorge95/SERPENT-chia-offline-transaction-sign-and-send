@@ -21,7 +21,7 @@ class CLI_helper():
             return False
         return True
 
-parser = ArgumentParser(description='CLI: WILLOW-chia-forks-offline-wallet-balance |'
+parser = ArgumentParser(description='CLI: SERPENT |'
                                     ' ' + open(os.path.join(os.path.dirname(__file__),'version.txt'), 'r').read())
 
 parser.add_argument('-c',
