@@ -102,7 +102,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'BALL': {'denominator': 1000000000000,
+initial_config = {'XTWO': {'denominator': 1000000000000,
+                          'friendly_name': 'two',
+                          'AGG_SIG_ME_ADDITIONAL_DATA': '839793d9e66b32940ac0ff383e520fcb3b8ec89b0be8291a5558da3a785cd668',
+                          'MAX_BLOCK_COST_CLVM': 11000000000,
+                          'COST_PER_BYTE': 12000,
+                          'config_root': fr"{os_path.expanduser('~')}/.two/mainnet/config",
+                          'wallet_sk_derivation_port': 8444},
+                  'BALL': {'denominator': 1000000000000,
                           'friendly_name': 'ball',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '12bf2c399d95878363839d030269f18a37111e185a1168f0b3706992600143ff',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
