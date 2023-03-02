@@ -332,10 +332,9 @@ class FormControls(buttons_label_state_change,
 class App():
 
     def __init__(self, root):
-        chdir(path.dirname(__file__))
 
         self.root = root
-        self.root.title('SERPENT | ' + open('version.txt' if path.isfile('version.txt') else path.join('src', 'version.txt') , 'r').read())
+        self.root.title('SERPENT | ' + open('version.txt' if path.isfile('version.txt') else path.join('snake', 'version.txt') , 'r').read())
         if ( sys.platform.startswith('win')):
             self.root.iconbitmap('../media/icon.ico' if path.isfile('../media/icon.ico') else 'media/icon.ico')
         else:
