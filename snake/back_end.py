@@ -74,7 +74,8 @@ class SERPENT():
                  amount_to_transfer: float,
                  fee: float = 0,
                  addresses_to_check: int = 50,
-                 use_farmer_sk: bool = False
+                 use_farmer_sk: bool = False,
+                 max_coins_per_bundle: int = 999999
                  ):
         self.config_SERPENT = handle_SERPENT_config()
 
@@ -82,6 +83,7 @@ class SERPENT():
 
         self.asset = asset
         self.use_farmer_sk = use_farmer_sk
+        self.max_coins_per_bundle = max_coins_per_bundle
         self.prefix = asset.lower()
         self.fee = int(fee * self.config_SERPENT[asset]['denominator'])
         self.amount_to_transfer = int(amount_to_transfer * self.config_SERPENT[asset]['denominator'])
@@ -209,73 +211,98 @@ class SERPENT():
 
         # ############################
         # select the coins needed for the amount_to_transfer
-        selected_coins: List[Coin] = []
         total_selected_amount = 0
-        for record in records:
-            total_selected_amount += record.amount
-            selected_coins.append(record)
+        selected_coins: List[List[Coin]] = []
+        current_bundle: List[Coin] = []
+        while total_selected_amount < self.amount_to_transfer:
+            if records:
+                working_record = records[0]
+                records.pop(0)
 
-            if total_selected_amount >= self.amount_to_transfer:
-                break
+                current_bundle.append(working_record)
+                total_selected_amount += working_record.amount
 
-        assert total_selected_amount >= self.amount_to_transfer
+                if len(current_bundle) == self.max_coins_per_bundle:
+                    selected_coins.append(current_bundle)
+                    current_bundle = []
+
+        # add the rest of the bundle
+        if current_bundle:
+            selected_coins.append(current_bundle)
 
         # ############################
         # calculate the change
         change = total_selected_amount - self.amount_to_transfer
-        primaries = [{"puzzlehash": decode_puzzle_hash(self.send_to_address),
-                      "amount": self.amount_to_transfer}]
 
-        self._log.info(f"Selected {len(selected_coins)} coins for transfer,"
-                       f" for a total of {total_selected_amount/self.config_SERPENT[self.asset]['denominator']} {self.asset}"
-                       f" and a change of {change/self.config_SERPENT[self.asset]['denominator']} {self.asset}.")
-
-        if change > 0:
-            # The change is going to the 0th hardened key
-            primaries.append({"puzzlehash": hexstr_to_bytes(self.hardened_ph[0]),
-                              "amount": change})
+        assert total_selected_amount >= self.amount_to_transfer
 
         # ############################
-        # compute the announcement and build the spend bundle
-        primary_announcement_hash: Optional[bytes32] = None
-        spends: List[CoinSpend] = []
-        for coin in selected_coins:
-            # get PK
-            puzzle: Program = puzzle_for_pk(self.puzzle_hash_to_pk[coin.puzzle_hash.hex()])
-            if primary_announcement_hash is None:
-                message_list: List[bytes32] = [c.name() for c in selected_coins]
-                for primary in primaries:
-                    message_list.append(Coin(coin.name(),
-                                             primary["puzzlehash"],
-                                             primary["amount"]).name())
-                message: bytes32 = std_hash(b"".join(message_list))
-                solution: Program = Wallet().make_solution(primaries=primaries,
-                                                           fee=self.fee,
-                                                           coin_announcements=[message])
-                primary_announcement_hash = Announcement(coin.name(), message).name()
+        # create the spend bundles
+
+        # initialization
+        self._log.info(f"Selected {sum([len(_) for _ in selected_coins])} coins for transfer,"
+                       f" for a total of {total_selected_amount / self.config_SERPENT[self.asset]['denominator']} {self.asset}"
+                       f" and a change of {change / self.config_SERPENT[self.asset]['denominator']} {self.asset}.")
+        self.spend_bundles: List[SpendBundle] = []
+
+        for index, bundle_data in enumerate(selected_coins,1):
+
+            # only add the change to the last transaction
+            if change and index == len(selected_coins):
+                # The change is going to the 0th hardened key
+                primaries = [{"puzzlehash": hexstr_to_bytes(self.hardened_ph[0]),
+                              "amount": change}]
+                total_selected_amount = sum([_.amount for _ in bundle_data]) - change
             else:
-                solution = Wallet().make_solution(primaries=[],
-                                                  coin_announcements_to_assert=[primary_announcement_hash])
-            spends.append(CoinSpend(coin,
-                                    puzzle,
-                                    solution))
+                primaries = []
+                total_selected_amount = sum([_.amount for _ in bundle_data])
 
-        self.spend_bundle: SpendBundle = SpendBundle(spends,
-                                                G2Element())
+            primaries += [{"puzzlehash": decode_puzzle_hash(self.send_to_address),
+                          "amount": total_selected_amount}]
 
-        # ####################
-        # check the costs
-        self.check_cost(self.spend_bundle)
-        assert self.spend_bundle.fees() == self.fee
+            # ############################
+            # compute the announcement and build the spend bundle
+            primary_announcement_hash: Optional[bytes32] = None
+            spends: List[CoinSpend] = []
+            for coin in bundle_data:
+                # get PK
+                puzzle: Program = puzzle_for_pk(self.puzzle_hash_to_pk[coin.puzzle_hash.hex()])
+                if primary_announcement_hash is None:
+                    message_list: List[bytes32] = [c.name() for c in bundle_data]
+                    for primary in primaries:
+                        message_list.append(Coin(coin.name(),
+                                                 primary["puzzlehash"],
+                                                 primary["amount"]).name())
+                    message: bytes32 = std_hash(b"".join(message_list))
+                    solution: Program = Wallet().make_solution(primaries=primaries,
+                                                               fee=self.fee,
+                                                               coin_announcements=[message])
+                    primary_announcement_hash = Announcement(coin.name(), message).name()
+                else:
+                    solution = Wallet().make_solution(primaries=[],
+                                                      coin_announcements_to_assert=[primary_announcement_hash])
+                spends.append(CoinSpend(coin,
+                                        puzzle,
+                                        solution))
 
-        # #######################
-        # print conditions and outputs
-        self.print_conditions(self.spend_bundle)
-        transaction_outputs = []
-        for addition in self.spend_bundle.additions():
-            transaction_outputs.append(f"\t{encode_puzzle_hash(addition.puzzle_hash, self.prefix)} {addition.amount}")
-        self._log.info("Created transaction with fees: {} and outputs:\n{}".format(self.spend_bundle.fees(),
-              '\n'.join(transaction_outputs)))
+            spend_bundle: SpendBundle = SpendBundle(spends,
+                                                    G2Element())
+
+            # ####################
+            # check the costs
+            self.check_cost(spend_bundle)
+            assert spend_bundle.fees() == self.fee
+
+            # #######################
+            # print conditions and outputs
+            self.print_conditions(spend_bundle)
+            transaction_outputs = []
+            for addition in spend_bundle.additions():
+                transaction_outputs.append(f"\t{encode_puzzle_hash(addition.puzzle_hash, self.prefix)} {addition.amount}")
+            self._log.info("Created transaction with fees: {} and outputs:\n{}".format(spend_bundle.fees(),
+                  '\n'.join(transaction_outputs)))
+
+            self.spend_bundles.append(spend_bundle)
 
     def sign_tx(
             self
@@ -287,40 +314,44 @@ class SERPENT():
 
         # This field is the ADDITIONAL_DATA found in the constants
         additional_data: bytes = bytes.fromhex(self.config_SERPENT[self.asset]['AGG_SIG_ME_ADDITIONAL_DATA'])
+        self.signed_spend_bundles = []
 
-        aggregate_signature: G2Element = G2Element()
-        for coin_solution in self.spend_bundle.coin_solutions:
-            if coin_solution.coin.puzzle_hash not in self.puzzle_hash_to_sk:
-                raise Exception(f"Puzzle hash {coin_solution.coin.puzzle_hash} not found for this key.")
+        for spend_bundle in self.spend_bundles:
+            aggregate_signature: G2Element = G2Element()
 
-            sk: PrivateKey = self.puzzle_hash_to_sk[coin_solution.coin.puzzle_hash]
-            synthetic_secret_key: PrivateKey = calculate_synthetic_secret_key(sk,
-                                                                              DEFAULT_HIDDEN_PUZZLE_HASH)
+            for coin_solution in spend_bundle.coin_solutions:
+                if coin_solution.coin.puzzle_hash not in self.puzzle_hash_to_sk:
+                    raise Exception(f"Puzzle hash {coin_solution.coin.puzzle_hash} not found for this key.")
 
-            err, conditions_dict, cost = conditions_dict_for_solution(
-                coin_solution.puzzle_reveal, coin_solution.solution, self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM']
-            )
+                sk: PrivateKey = self.puzzle_hash_to_sk[coin_solution.coin.puzzle_hash]
+                synthetic_secret_key: PrivateKey = calculate_synthetic_secret_key(sk,
+                                                                                  DEFAULT_HIDDEN_PUZZLE_HASH)
 
-            if err or conditions_dict is None:
-                raise Exception(f"Transaction sign failed, con:{conditions_dict}, error: {err}")
+                err, conditions_dict, cost = conditions_dict_for_solution(
+                    coin_solution.puzzle_reveal, coin_solution.solution, self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM']
+                )
 
-            pk_msgs = pkm_pairs_for_conditions_dict(conditions_dict,
-                                                    bytes(coin_solution.coin.name()),
-                                                    additional_data)
-            assert len(pk_msgs) == 1
-            _, msg = pk_msgs[0]
-            signature = AugSchemeMPL.sign(synthetic_secret_key, msg)
-            aggregate_signature = AugSchemeMPL.aggregate([aggregate_signature, signature])
+                if err or conditions_dict is None:
+                    raise Exception(f"Transaction sign failed, con:{conditions_dict}, error: {err}")
 
-        self.signed_spend_bundle = SpendBundle(self.spend_bundle.coin_solutions,
-                                               aggregate_signature)
+                pk_msgs = pkm_pairs_for_conditions_dict(conditions_dict,
+                                                        bytes(coin_solution.coin.name()),
+                                                        additional_data)
+                assert len(pk_msgs) == 1
+                _, msg = pk_msgs[0]
+                signature = AugSchemeMPL.sign(synthetic_secret_key, msg)
+                aggregate_signature = AugSchemeMPL.aggregate([aggregate_signature, signature])
+
+            self.signed_spend_bundles.append(SpendBundle(spend_bundle.coin_solutions,
+                                                         aggregate_signature))
 
         self._log.info("Transaction signed successfully !")
 
     def push_tx(
             self
     ) -> None:
-        response = self.full_node_API_wrapper.query_full_node(url_option='push_tx',
-                                                   json_data={"spend_bundle": self.signed_spend_bundle.to_json_dict()})
-        self._log.info(f"Full node response: $${response}$$")
+        for signed_spend_bundle in self.signed_spend_bundles:
+            response = self.full_node_API_wrapper.query_full_node(url_option='push_tx',
+                                                       json_data={"spend_bundle": signed_spend_bundle.to_json_dict()})
+            self._log.info(f"Full node response: $${response}$$")
 
