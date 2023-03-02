@@ -10,21 +10,17 @@ from os import path as os_path,\
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 from json import load,\
     dump
-import sys
 
 def handle_SERPENT_config():
     CONFIG_FILE = 'config_SERPENT.json'
 
-    config_SERPENT_path = CONFIG_FILE if '_MEIPASS' in sys.__dict__ \
-                                        else os_path.join(os_path.dirname(__file__), f"../{CONFIG_FILE}")
-
-    if not os_path.isfile(config_SERPENT_path):
+    if not os_path.isfile(CONFIG_FILE):
 
         config_SERPENT = initial_config
-        with open(config_SERPENT_path, 'w') as json_out_handle:
+        with open(CONFIG_FILE, 'w') as json_out_handle:
             dump(config_SERPENT, json_out_handle, indent=2)
 
-    with open(config_SERPENT_path, 'r') as json_in_handle:
+    with open(CONFIG_FILE, 'r') as json_in_handle:
         config_SERPENT = load(json_in_handle)
 
     return config_SERPENT
