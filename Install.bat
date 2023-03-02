@@ -11,7 +11,7 @@ python -m venv venv
 :: Windows doesn't allow the creation of symlinks without special priviledges, so hardlinks are created instead.
 mklink /h activate.bat venv\Scripts\activate.bat
 mklink /j venv\Scripts\chia chia_blockchain\chia
-mklink /j venv\Scripts\src src
+mklink /j venv\Scripts\snake snake
 mklink /j venv\Scripts\media media
 
 call activate.bat

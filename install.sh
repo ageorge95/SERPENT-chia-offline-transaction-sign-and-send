@@ -10,7 +10,7 @@ ln -s chia_blockchain/chia .
 python3 -m venv venv
 ln -s venv/bin/activate .
 ln -s $(pwd)/chia_blockchain/chia venv/bin/
-ln -s $(pwd)/src venv/bin/
+ln -s $(pwd)/snake venv/bin/
 ln -s $(pwd)/media venv/bin/
 
 . ./activate
