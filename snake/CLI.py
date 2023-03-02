@@ -52,6 +52,12 @@ parser.add_argument('-f',
                     help='Fees to attach to the transaction.',
                     default = 0)
 
+parser.add_argument('-l',
+                    '--limit',
+                    type=float,
+                    help='The maximum nr of coins per transaction.',
+                    default = 0)
+
 parser.add_argument('--farmerSK', dest='farmerSK', action='store_true')
 parser.set_defaults(farmerSK=False)
 
@@ -80,11 +86,12 @@ def main():
     try:
         print(args.mnemonic)
         snake = SERPENT(asset=args.coin,
-                       mnemonic=args.mnemonic,
-                       send_to_address=args.sendToAddr,
-                       amount_to_transfer=args.amount,
-                       fee = args.fees,
-                       use_farmer_sk = args.farmerSK
+                        mnemonic=args.mnemonic,
+                        send_to_address=args.sendToAddr,
+                        amount_to_transfer=args.amount,
+                        fee = args.fees,
+                        use_farmer_sk = args.farmerSK,
+                        max_coins_per_bundle=args.limit
                        )
         snake.create_unsigned_transaction()
         snake.sign_tx()
