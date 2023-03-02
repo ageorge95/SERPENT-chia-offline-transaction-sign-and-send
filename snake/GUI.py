@@ -134,7 +134,7 @@ class ConsoleUi(configure_logger_and_queue):
         self.v_scroll = Scrollbar(self.frame, orient='vertical')
         self.v_scroll.grid(row=1, column=1, sticky=(N, S))
 
-        self.scrolled_text = Text(frame, state='disabled', width=110, height=30, wrap=NONE, xscrollcommand=self.h_scroll.set, yscrollcommand=self.v_scroll.set)
+        self.scrolled_text = Text(frame, state='disabled', width=110, height=32, wrap=NONE, xscrollcommand=self.h_scroll.set, yscrollcommand=self.v_scroll.set)
         self.scrolled_text.grid(row=1, column=0, sticky=(N, S, W, E))
         self.scrolled_text.configure(font='TkFixedFont')
         self.scrolled_text.tag_config('INFO', foreground='black')
@@ -237,15 +237,25 @@ class FormControls(buttons_label_state_change,
         self.entry_send_to_amount.grid(column=0, row=11)
         self.tip_send_to_amount = tix.Balloon(self.frame)
         self.tip_send_to_amount.bind_widget(self.entry_send_to_amount,
-                                             balloonmsg="The amount of coins to send, ex: 1 OR 1.1 OR 10")
+                                             balloonmsg="The amount to send, ex: 1 OR 1.1 OR 10")
 
         self.label_attached_fee = Label(self.frame, text='Attached fee:')
         self.entry_attached_fee = Entry(self.frame)
+        self.entry_attached_fee.insert(0, '0')
         self.label_attached_fee.grid(column=0, row=12)
         self.entry_attached_fee.grid(column=0, row=13)
         self.tip_attached_fee = tix.Balloon(self.frame)
         self.tip_attached_fee.bind_widget(self.entry_attached_fee,
                                           balloonmsg="The fee to attach to the transaction.")
+
+        self.label_coins_limit = Label(self.frame, text='Coins LIMIT:')
+        self.entry_coins_limit = Entry(self.frame)
+        self.entry_coins_limit.insert(0, '999999')
+        self.label_coins_limit.grid(column=0, row=14)
+        self.entry_coins_limit.grid(column=0, row=15)
+        self.tip_coins_limit = tix.Balloon(self.frame)
+        self.tip_coins_limit.bind_widget(self.entry_coins_limit,
+                                         balloonmsg="The maximum number of coins per spend bundle.")
 
         self.label_backend_status_notify = Label(self.frame, text='Back-end status:')
         self.label_backend_status_notify.grid(column=2, row=0)
@@ -253,25 +263,25 @@ class FormControls(buttons_label_state_change,
         self.label_backend_status.grid(column=2, row=1)
 
         self.label_initiate_transfer = Label(self.frame, text='Initiate transfer with:')
-        self.label_initiate_transfer.grid(column=0, row=15)
+        self.label_initiate_transfer.grid(column=0, row=18)
 
         self.button_transfer_master_sks = ttk.Button(self.frame, text='Master sks', command=lambda :self.master_initiate_transfer(use_farmer_sk=False))
-        self.button_transfer_master_sks.grid(column=0, row=16, sticky=W)
+        self.button_transfer_master_sks.grid(column=0, row=19, sticky=W)
         self.tip_transfer_master_sks = tix.Balloon(self.frame)
         self.tip_transfer_master_sks.bind_widget(self.button_transfer_master_sks,
                                                  balloonmsg="Will initiate the coins transfer; will use the derived master sks.")
 
         self.button_transfer_farmer_sk = ttk.Button(self.frame, text='Farmer sk (aka unstake)', command=lambda :self.master_initiate_transfer(use_farmer_sk=True))
-        self.button_transfer_farmer_sk.grid(column=0, row=16, sticky=E)
+        self.button_transfer_farmer_sk.grid(column=0, row=19, sticky=E)
         self.tip_transfer_farmer_sk = tix.Balloon(self.frame)
         self.tip_transfer_farmer_sk.bind_widget(self.button_transfer_farmer_sk,
                                                 balloonmsg="Will initiate the coins transfer; will use the farmer sk.")
 
         self.separator_filtering_v = ttk.Separator(self.frame, orient='vertical')
-        self.separator_filtering_v.grid(column=1, row=0, rowspan=17, sticky=(N, S))
+        self.separator_filtering_v.grid(column=1, row=0, rowspan=20, sticky=(N, S))
 
         self.separator_filtering_h = ttk.Separator(self.frame, orient='horizontal')
-        self.separator_filtering_h.grid(column=0, row=14, columnspan=2, sticky=(W, E))
+        self.separator_filtering_h.grid(column=0, row=17, columnspan=2, sticky=(W, E))
 
     def check_coin_selection(self):
         if self.asset_to_use.get() == 'SELECT AN ASSET':
@@ -314,7 +324,8 @@ class FormControls(buttons_label_state_change,
                                     send_to_address=self.entry_send_to_address.get('1.0', END).strip(),
                                     amount_to_transfer=float(self.entry_send_to_amount.get()),
                                     fee=float(self.entry_attached_fee.get()),
-                                    use_farmer_sk=use_farmer_sk)
+                                    use_farmer_sk=use_farmer_sk,
+                                    max_coins_per_bundle=int(self.entry_coins_limit.get()))
                     snake.create_unsigned_transaction()
                     snake.sign_tx()
                     snake.push_tx()
