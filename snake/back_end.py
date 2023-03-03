@@ -214,17 +214,16 @@ class SERPENT():
         total_selected_amount = 0
         selected_coins: List[List[Coin]] = []
         current_bundle: List[Coin] = []
-        while total_selected_amount < self.amount_to_transfer:
-            if records:
-                working_record = records[0]
-                records.pop(0)
+        while total_selected_amount < self.amount_to_transfer and records:
+            working_record = records[0]
+            records.pop(0)
 
-                current_bundle.append(working_record)
-                total_selected_amount += working_record.amount
+            current_bundle.append(working_record)
+            total_selected_amount += working_record.amount
 
-                if len(current_bundle) == self.max_coins_per_bundle:
-                    selected_coins.append(current_bundle)
-                    current_bundle = []
+            if len(current_bundle) == self.max_coins_per_bundle:
+                selected_coins.append(current_bundle)
+                current_bundle = []
 
         # add the rest of the bundle
         if current_bundle:
