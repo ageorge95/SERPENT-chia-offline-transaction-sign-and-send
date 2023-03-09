@@ -120,39 +120,40 @@ class SERPENT():
             self.puzzle_hash_to_pk[puzzle_hash.hex()] = self.farmer_pk
 
         else:
-            # hardened public keys
-            wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk(self.master_sk, 12381)
-            wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk(wallet_sk_intermediate, self.config_SERPENT[self.asset]['wallet_sk_derivation_port'])
-            wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk(wallet_sk_intermediate, 2)
-            for i in range(self.addresses_to_check):
-                child_sk: PrivateKey = AugSchemeMPL.derive_child_sk(wallet_sk_intermediate, i)
-                child_pk: G1Element = child_sk.get_g1()
-                puzzle = puzzle_for_pk(child_pk)
-                puzzle_hash = puzzle.get_tree_hash()
-                address = encode_puzzle_hash(puzzle_hash, self.prefix)
+            for wallet_sk_derivation_port in self.config_SERPENT[self.asset]['wallet_sk_derivation_port']:
+                # hardened public keys
+                wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk(self.master_sk, 12381)
+                wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk(wallet_sk_intermediate, wallet_sk_derivation_port)
+                wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk(wallet_sk_intermediate, 2)
+                for i in range(self.addresses_to_check):
+                    child_sk: PrivateKey = AugSchemeMPL.derive_child_sk(wallet_sk_intermediate, i)
+                    child_pk: G1Element = child_sk.get_g1()
+                    puzzle = puzzle_for_pk(child_pk)
+                    puzzle_hash = puzzle.get_tree_hash()
+                    address = encode_puzzle_hash(puzzle_hash, self.prefix)
 
-                self.hardened_ph.append(puzzle_hash.hex())
-                self.hardened_p.append(puzzle)
-                self.hardened_addr.append(address)
-                self.puzzle_hash_to_sk[puzzle_hash] = child_sk
-                self.puzzle_hash_to_pk[puzzle_hash.hex()] = child_pk
+                    self.hardened_ph.append(puzzle_hash.hex())
+                    self.hardened_p.append(puzzle)
+                    self.hardened_addr.append(address)
+                    self.puzzle_hash_to_sk[puzzle_hash] = child_sk
+                    self.puzzle_hash_to_pk[puzzle_hash.hex()] = child_pk
 
-            # unhardened public keys
-            wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(self.master_sk, 12381)
-            wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(wallet_sk_intermediate, self.config_SERPENT[self.asset]['wallet_sk_derivation_port'])
-            wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(wallet_sk_intermediate, 2)
-            for i in range(self.addresses_to_check):
-                child_sk: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(wallet_sk_intermediate, i)
-                child_pk: G1Element = child_sk.get_g1()
-                puzzle = puzzle_for_pk(child_pk)
-                puzzle_hash = puzzle.get_tree_hash()
-                address = encode_puzzle_hash(puzzle_hash, self.prefix)
+                # unhardened public keys
+                wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(self.master_sk, 12381)
+                wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(wallet_sk_intermediate, wallet_sk_derivation_port)
+                wallet_sk_intermediate: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(wallet_sk_intermediate, 2)
+                for i in range(self.addresses_to_check):
+                    child_sk: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(wallet_sk_intermediate, i)
+                    child_pk: G1Element = child_sk.get_g1()
+                    puzzle = puzzle_for_pk(child_pk)
+                    puzzle_hash = puzzle.get_tree_hash()
+                    address = encode_puzzle_hash(puzzle_hash, self.prefix)
 
-                self.unhardened_ph.append(puzzle_hash.hex())
-                self.unhardened_p.append(puzzle)
-                self.unhardened_addr.append(address)
-                self.puzzle_hash_to_sk[puzzle_hash] = child_sk
-                self.puzzle_hash_to_pk[puzzle_hash.hex()] = child_pk
+                    self.unhardened_ph.append(puzzle_hash.hex())
+                    self.unhardened_p.append(puzzle)
+                    self.unhardened_addr.append(address)
+                    self.puzzle_hash_to_sk[puzzle_hash] = child_sk
+                    self.puzzle_hash_to_pk[puzzle_hash.hex()] = child_pk
 
     def check_cost(
             self,
