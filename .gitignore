@@ -8,3 +8,4 @@ config_SERPENT.json
 chia
 venv
 activate.bat
+/runtime_log.log.1
