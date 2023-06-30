@@ -98,7 +98,14 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XTWO': {'denominator': 1000000000000,
+initial_config = {'XCH': {'denominator': 1000000000000,
+                         'friendly_name': 'chik',
+                         'AGG_SIG_ME_ADDITIONAL_DATA': '6952ce05c863008c10b211baab87ee58e11c52fda1b9a13d0190d48d6b18354b',
+                         'MAX_BLOCK_COST_CLVM': 11000000000,
+                         'COST_PER_BYTE': 12000,
+                         'config_root': fr"{os_path.expanduser('~')}/.chik/mainnet/config",
+                         'wallet_sk_derivation_port': [8444]},
+                  'XTWO': {'denominator': 1000000000000,
                           'friendly_name': 'two',
                           'AGG_SIG_ME_ADDITIONAL_DATA': '839793d9e66b32940ac0ff383e520fcb3b8ec89b0be8291a5558da3a785cd668',
                           'MAX_BLOCK_COST_CLVM': 11000000000,
