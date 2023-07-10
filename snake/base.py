@@ -98,7 +98,7 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XCH': {'denominator': 1000000000000,
+initial_config = {'XCK': {'denominator': 1000000000000,
                          'friendly_name': 'chik',
                          'AGG_SIG_ME_ADDITIONAL_DATA': '6952ce05c863008c10b211baab87ee58e11c52fda1b9a13d0190d48d6b18354b',
                          'MAX_BLOCK_COST_CLVM': 11000000000,
