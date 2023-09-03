@@ -1,4 +1,10 @@
-from os import path
+import requests
+requests.packages.urllib3.disable_warnings()
+from traceback import format_exc
+from yaml import safe_load
+from snake.base import handle_SERPENT_config
+from logging import getLogger
+from decimal import Decimal
 from chia.wallet.derive_keys import master_sk_to_farmer_sk
 from chia.wallet.wallet import Wallet
 from chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import puzzle_for_pk,\
@@ -25,16 +31,11 @@ from blspy import AugSchemeMPL,\
     PrivateKey,\
     G1Element,\
     G2Element
+from os import path
 from typing import Dict,\
     AnyStr,\
     Optional,\
     List
-import requests
-requests.packages.urllib3.disable_warnings()
-from traceback import format_exc
-from yaml import safe_load
-from snake.base import handle_SERPENT_config
-from logging import getLogger
 
 class FullNodeAPIwrapper():
     def __init__(self,
@@ -241,8 +242,8 @@ class SERPENT():
 
         # initialization
         self._log.info(f"Selected {sum([len(_) for _ in selected_coins])} coins for transfer,"
-                       f" for a total of {total_selected_amount / self.config_SERPENT[self.asset]['denominator']} {self.asset}"
-                       f" and a change of {change / self.config_SERPENT[self.asset]['denominator']} {self.asset}.")
+                       f" for a total of {Decimal(str(total_selected_amount)) / Decimal(str(self.config_SERPENT[self.asset]['denominator']))} {self.asset}"
+                       f" and a change of {Decimal(str(change)) / Decimal(str(self.config_SERPENT[self.asset]['denominator']))} {self.asset}.")
         self.spend_bundles: List[SpendBundle] = []
 
         for index, bundle_data in enumerate(selected_coins,1):
