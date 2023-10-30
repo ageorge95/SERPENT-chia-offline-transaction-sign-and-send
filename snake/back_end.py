@@ -7,6 +7,7 @@ from logging import getLogger
 from decimal import Decimal
 from chia.wallet.derive_keys import master_sk_to_farmer_sk
 from chia.wallet.wallet import Wallet
+from chia.wallet.payment import Payment
 from chia.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import puzzle_for_pk,\
     calculate_synthetic_secret_key,\
     DEFAULT_HIDDEN_PUZZLE_HASH
@@ -164,11 +165,32 @@ class SERPENT():
         Checks that the cost of the transaction does not exceed blockchain limits. As of version 1.1.2, the mempool limits
         transactions to 50% of the block limit, or 0.5 * 11000000000 = 5.5 billion cost.
         """
+        class Constants:
+            SOFT_FORK2_HEIGHT = self.config_SERPENT[self.asset]['SOFT_FORK2_HEIGHT']
+            SOFT_FORK3_HEIGHT = self.config_SERPENT[self.asset]['SOFT_FORK3_HEIGHT']
+            HARD_FORK_HEIGHT = self.config_SERPENT[self.asset]['HARD_FORK_HEIGHT']
+            HARD_FORK_FIX_HEIGHT = self.config_SERPENT[self.asset]['HARD_FORK_FIX_HEIGHT']
+
+        try:
+            fullNode_response = self.full_node_API_wrapper.query_full_node(url_option='get_blockchain_state',
+                                                                           json_data={})
+            try:
+                height = fullNode_response['blockchain_state']['peak']['height']
+            except:
+                self._log.error(f"Abnormal full node response\n{format_exc(chain=False)}")
+                height = None
+        except:
+            self._log.error(f"Error found while querying the full node at get_blockchain_state\n{format_exc(chain=False)}")
+            height = None
+
+        assert height
+
         program = simple_solution_generator(bundle)
         npc_result = get_name_puzzle_conditions(generator=program,
                                                 max_cost=int(self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM'] * 0.5),
-                                                cost_per_byte=self.config_SERPENT[self.asset]['COST_PER_BYTE'],
-                                                mempool_mode=True)
+                                                mempool_mode=True,
+                                                height=height,
+                                                constants=Constants)
         cost = npc_result.cost
         assert cost < (0.5 * self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM'])
 
@@ -182,9 +204,8 @@ class SERPENT():
             result = Program.from_bytes(bytes(coin_solution.puzzle_reveal)).run(
                 Program.from_bytes(bytes(coin_solution.solution))
             )
-            error, result_human = parse_sexp_to_conditions(result)
-            assert error is None
-            for cvp in result_human:
+            parse_result = parse_sexp_to_conditions(result)
+            for cvp in parse_result:
                 conditions_info.append((f"\t{ConditionOpcode(cvp.opcode).name}: {[var.hex() for var in cvp.vars]}"))
         self._log.info("Conditions:\n{}".format('\n'.join(conditions_info)))
 
@@ -251,15 +272,15 @@ class SERPENT():
             # only add the change to the last transaction
             if change and index == len(selected_coins):
                 # The change is going to the 0th hardened key
-                primaries = [{"puzzlehash": hexstr_to_bytes(self.hardened_ph[0]),
-                              "amount": change}]
+                primaries = [Payment(puzzle_hash=hexstr_to_bytes(self.hardened_ph[0]),
+                                     amount=change)]
                 total_selected_amount = sum([_.amount for _ in bundle_data]) - change
             else:
                 primaries = []
                 total_selected_amount = sum([_.amount for _ in bundle_data])
 
-            primaries += [{"puzzlehash": decode_puzzle_hash(self.send_to_address),
-                          "amount": total_selected_amount}]
+            primaries += [Payment(puzzle_hash=decode_puzzle_hash(self.send_to_address),
+                                  amount=total_selected_amount)]
 
             # ############################
             # compute the announcement and build the spend bundle
@@ -272,8 +293,8 @@ class SERPENT():
                     message_list: List[bytes32] = [c.name() for c in bundle_data]
                     for primary in primaries:
                         message_list.append(Coin(coin.name(),
-                                                 primary["puzzlehash"],
-                                                 primary["amount"]).name())
+                                                 primary.puzzle_hash,
+                                                 primary.amount).name())
                     message: bytes32 = std_hash(b"".join(message_list))
                     solution: Program = Wallet().make_solution(primaries=primaries,
                                                                fee=self.fee,
@@ -328,15 +349,12 @@ class SERPENT():
                 synthetic_secret_key: PrivateKey = calculate_synthetic_secret_key(sk,
                                                                                   DEFAULT_HIDDEN_PUZZLE_HASH)
 
-                err, conditions_dict, cost = conditions_dict_for_solution(
+                condition_result = conditions_dict_for_solution(
                     coin_solution.puzzle_reveal, coin_solution.solution, self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM']
                 )
 
-                if err or conditions_dict is None:
-                    raise Exception(f"Transaction sign failed, con:{conditions_dict}, error: {err}")
-
-                pk_msgs = pkm_pairs_for_conditions_dict(conditions_dict,
-                                                        bytes(coin_solution.coin.name()),
+                pk_msgs = pkm_pairs_for_conditions_dict(condition_result,
+                                                        coin_solution.coin,
                                                         additional_data)
                 assert len(pk_msgs) == 1
                 _, msg = pk_msgs[0]
