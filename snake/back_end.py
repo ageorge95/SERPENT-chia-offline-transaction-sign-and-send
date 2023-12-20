@@ -237,7 +237,7 @@ class SERPENT():
         total_selected_amount = 0
         selected_coins: List[List[Coin]] = []
         current_bundle: List[Coin] = []
-        while total_selected_amount < self.amount_to_transfer and records:
+        while total_selected_amount < (self.amount_to_transfer + self.fee) and records:
             working_record = records[0]
             records.pop(0)
 
@@ -254,9 +254,9 @@ class SERPENT():
 
         # ############################
         # calculate the change
-        change = total_selected_amount - self.amount_to_transfer
+        change = total_selected_amount - (self.amount_to_transfer + self.fee)
 
-        assert total_selected_amount >= self.amount_to_transfer
+        assert total_selected_amount >= (self.amount_to_transfer + self.fee)
 
         # ############################
         # create the spend bundles
@@ -267,17 +267,17 @@ class SERPENT():
                        f" and a change of {Decimal(str(change)) / Decimal(str(self.config_SERPENT[self.asset]['denominator']))} {self.asset}.")
         self.spend_bundles: List[SpendBundle] = []
 
-        for index, bundle_data in enumerate(selected_coins,1):
+        for index, coins in enumerate(selected_coins,1):
 
             # only add the change to the last transaction
             if change and index == len(selected_coins):
                 # The change is going to the 0th hardened key
                 primaries = [Payment(puzzle_hash=hexstr_to_bytes(self.hardened_ph[0]),
                                      amount=change)]
-                total_selected_amount = sum([_.amount for _ in bundle_data]) - change
+                total_selected_amount = sum([_.amount for _ in coins]) - change
             else:
                 primaries = []
-                total_selected_amount = sum([_.amount for _ in bundle_data])
+                total_selected_amount = sum([_.amount for _ in coins])-self.fee
 
             primaries += [Payment(puzzle_hash=decode_puzzle_hash(self.send_to_address),
                                   amount=total_selected_amount)]
@@ -286,11 +286,11 @@ class SERPENT():
             # compute the announcement and build the spend bundle
             primary_announcement_hash: Optional[bytes32] = None
             spends: List[CoinSpend] = []
-            for coin in bundle_data:
-                # get PK
+            for coin in coins:
                 puzzle: Program = puzzle_for_pk(self.puzzle_hash_to_pk[coin.puzzle_hash.hex()])
                 if primary_announcement_hash is None:
-                    message_list: List[bytes32] = [c.name() for c in bundle_data]
+                    # Only one coin creates outputs
+                    message_list: List[bytes32] = [c.name() for c in coins]
                     for primary in primaries:
                         message_list.append(Coin(coin.name(),
                                                  primary.puzzle_hash,
@@ -301,6 +301,7 @@ class SERPENT():
                                                                coin_announcements=[message])
                     primary_announcement_hash = Announcement(coin.name(), message).name()
                 else:
+                    # Process the non-origin coins now that we have the primary announcement hash
                     solution = Wallet().make_solution(primaries=[],
                                                       coin_announcements_to_assert=[primary_announcement_hash])
                 spends.append(CoinSpend(coin,
