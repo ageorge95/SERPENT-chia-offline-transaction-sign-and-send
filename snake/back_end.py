@@ -274,10 +274,10 @@ class SERPENT():
                 # The change is going to the 0th hardened key
                 primaries = [Payment(puzzle_hash=hexstr_to_bytes(self.hardened_ph[0]),
                                      amount=change)]
-                total_selected_amount = sum([_.amount for _ in coins]) - change
+                total_selected_amount = sum([_.amount for _ in coins]) - change - self.fee
             else:
                 primaries = []
-                total_selected_amount = sum([_.amount for _ in coins])-self.fee
+                total_selected_amount = sum([_.amount for _ in coins]) - self.fee
 
             primaries += [Payment(puzzle_hash=decode_puzzle_hash(self.send_to_address),
                                   amount=total_selected_amount)]
