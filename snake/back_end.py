@@ -21,14 +21,15 @@ from chia.types.blockchain_format.coin import Coin
 from chia.types.blockchain_format.program import Program
 from chia.types.coin_spend import CoinSpend
 from chia.types.announcement import Announcement
-from chia.types.spend_bundle import SpendBundle
+from chia.types.spend_bundle import (SpendBundle,
+                                     estimate_fees)
 from chia.types.condition_opcodes import ConditionOpcode
 from chia.util.hash import std_hash
 from chia.util.byte_types import hexstr_to_bytes
 from chia.util.condition_tools import parse_sexp_to_conditions
 from chia.util.condition_tools import conditions_dict_for_solution,\
     pkm_pairs_for_conditions_dict
-from blspy import AugSchemeMPL,\
+from chia_rs import AugSchemeMPL,\
     PrivateKey,\
     G1Element,\
     G2Element
@@ -200,9 +201,9 @@ class SERPENT():
     ) -> None:
 
         conditions_info = []
-        for coin_solution in spend_bundle.coin_solutions:
-            result = Program.from_bytes(bytes(coin_solution.puzzle_reveal)).run(
-                Program.from_bytes(bytes(coin_solution.solution))
+        for coin_spend in spend_bundle.coin_spends:
+            result = Program.from_bytes(bytes(coin_spend.puzzle_reveal)).run(
+                Program.from_bytes(bytes(coin_spend.solution))
             )
             parse_result = parse_sexp_to_conditions(result)
             for cvp in parse_result:
@@ -314,7 +315,7 @@ class SERPENT():
             # ####################
             # check the costs
             self.check_cost(spend_bundle)
-            assert spend_bundle.fees() == self.fee
+            assert estimate_fees(spend_bundle) == self.fee
 
             # #######################
             # print conditions and outputs
@@ -322,7 +323,7 @@ class SERPENT():
             transaction_outputs = []
             for addition in spend_bundle.additions():
                 transaction_outputs.append(f"\t{encode_puzzle_hash(addition.puzzle_hash, self.prefix)} {addition.amount}")
-            self._log.info("Created transaction with fees: {} and outputs:\n{}".format(spend_bundle.fees(),
+            self._log.info("Created transaction with fees: {} and outputs:\n{}".format(estimate_fees(spend_bundle),
                   '\n'.join(transaction_outputs)))
 
             self.spend_bundles.append(spend_bundle)
@@ -342,27 +343,27 @@ class SERPENT():
         for spend_bundle in self.spend_bundles:
             aggregate_signature: G2Element = G2Element()
 
-            for coin_solution in spend_bundle.coin_solutions:
-                if coin_solution.coin.puzzle_hash not in self.puzzle_hash_to_sk:
-                    raise Exception(f"Puzzle hash {coin_solution.coin.puzzle_hash} not found for this key.")
+            for coin_spend in spend_bundle.coin_spends:
+                if coin_spend.coin.puzzle_hash not in self.puzzle_hash_to_sk:
+                    raise Exception(f"Puzzle hash {coin_spend.coin.puzzle_hash} not found for this key.")
 
-                sk: PrivateKey = self.puzzle_hash_to_sk[coin_solution.coin.puzzle_hash]
+                sk: PrivateKey = self.puzzle_hash_to_sk[coin_spend.coin.puzzle_hash]
                 synthetic_secret_key: PrivateKey = calculate_synthetic_secret_key(sk,
                                                                                   DEFAULT_HIDDEN_PUZZLE_HASH)
 
                 condition_result = conditions_dict_for_solution(
-                    coin_solution.puzzle_reveal, coin_solution.solution, self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM']
+                    coin_spend.puzzle_reveal, coin_spend.solution, self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM']
                 )
 
                 pk_msgs = pkm_pairs_for_conditions_dict(condition_result,
-                                                        coin_solution.coin,
+                                                        coin_spend.coin,
                                                         additional_data)
                 assert len(pk_msgs) == 1
                 _, msg = pk_msgs[0]
                 signature = AugSchemeMPL.sign(synthetic_secret_key, msg)
                 aggregate_signature = AugSchemeMPL.aggregate([aggregate_signature, signature])
 
-            self.signed_spend_bundles.append(SpendBundle(spend_bundle.coin_solutions,
+            self.signed_spend_bundles.append(SpendBundle(spend_bundle.coin_spends,
                                                          aggregate_signature))
 
         self._log.info("Transaction signed successfully !")
