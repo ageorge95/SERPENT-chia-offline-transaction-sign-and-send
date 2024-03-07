@@ -14,8 +14,8 @@ watchdog
 pillow
 chia_rs==0.2.15
 clvm==0.9.8
-clvm-tools-rs==0.1.39
+clvm-tools-rs==0.1.40
 clvm_tools==0.4.7
 chiapos==2.0.3
-chiavdf==1.1.0
-anyio==4.0.0
+chiavdf==1.1.1
+anyio==4.2.0
