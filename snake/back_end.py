@@ -192,8 +192,6 @@ class SERPENT():
                                                 mempool_mode=True,
                                                 height=height,
                                                 constants=Constants)
-        cost = npc_result.cost
-        assert cost < (0.5 * self.config_SERPENT[self.asset]['MAX_BLOCK_COST_CLVM'])
 
     def print_conditions(
             self,

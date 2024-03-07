@@ -12,7 +12,7 @@ cryptography
 keyring
 watchdog
 pillow
-chia_rs==0.2.15
+chia_rs==0.4.1
 clvm==0.9.8
 clvm-tools-rs==0.1.40
 clvm_tools==0.4.7
