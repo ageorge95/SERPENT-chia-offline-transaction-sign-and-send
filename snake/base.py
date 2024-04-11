@@ -98,7 +98,18 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'XSEA': {'denominator': 1000000000000,
+initial_config = {'XXCH': {'denominator': 1000000000000,
+                           'friendly_name': 'xxch',
+                           'AGG_SIG_ME_ADDITIONAL_DATA': '4c942ec7c30d7e28c6a755a971dc82f4a66ec297982996453a938df2c0fe1c88',
+                           'MAX_BLOCK_COST_CLVM': 11000000000,
+                           'COST_PER_BYTE': 12000,
+                           'SOFT_FORK2_HEIGHT': 0,
+                           'SOFT_FORK3_HEIGHT': 99999999999,
+                           'HARD_FORK_HEIGHT': 1016000,
+                           'HARD_FORK_FIX_HEIGHT': 1016000,
+                           'config_root': fr"{os_path.expanduser('~')}/.sea/mainnet/config",
+                           'wallet_sk_derivation_port': [8444]},
+                  'XSEA': {'denominator': 1000000000000,
                            'friendly_name': 'seacoin',
                            'AGG_SIG_ME_ADDITIONAL_DATA': 'b7bc81abc53a6fd1e9e50fc17e451adbc72f55e9c3d1edfafe58ade1c468c8c8',
                            'MAX_BLOCK_COST_CLVM': 11000000000,
