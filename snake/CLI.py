@@ -84,7 +84,6 @@ def main():
         sys.exit('How much shall I send ? Please provide an amount !')
 
     try:
-        print(args.mnemonic)
         snake = SERPENT(asset=args.coin,
                         mnemonic=args.mnemonic,
                         send_to_address=args.sendToAddr,
