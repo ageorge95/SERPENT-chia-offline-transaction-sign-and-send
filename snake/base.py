@@ -98,7 +98,18 @@ class configure_logger_and_queue():
         self.queue_handler.setFormatter(formatter)
         self._log.addHandler(self.queue_handler)
 
-initial_config = {'ABA': {'denominator': 1000000000000,
+initial_config = {'LOT': {'denominator': 1000000000,
+                           'friendly_name': 'lottery',
+                           'AGG_SIG_ME_ADDITIONAL_DATA': 'f5681e7e0aaa50db545a5f9ca59b8b9df165ca67b6b0bc64b31f48e39deb12e3',
+                           'MAX_BLOCK_COST_CLVM': 11000000000,
+                           'COST_PER_BYTE': 12000,
+                           'SOFT_FORK2_HEIGHT': 0,
+                           'SOFT_FORK3_HEIGHT': 99999999999,
+                           'HARD_FORK_HEIGHT': 0,
+                           'HARD_FORK_FIX_HEIGHT': 0,
+                           'config_root': fr"{os_path.expanduser('~')}/.lottery/mainnet/config",
+                           'wallet_sk_derivation_port': [8444]},
+                  'ABA': {'denominator': 1000000000000,
                            'friendly_name': 'aba',
                            'AGG_SIG_ME_ADDITIONAL_DATA': '9c24167b2b628e8edec251888fd200dde01b14d153d924c48f4e6eb4e09536dd',
                            'MAX_BLOCK_COST_CLVM': 11000000000,
